@@ -1,7 +1,7 @@
-module Language.Nouns.Core (document) where
+module Text.Nouns.Core (document) where
 
 import Text.ParserCombinators.Parsec
-import qualified Language.Nouns.Token as Token
+import qualified Text.Nouns.Token as Token
 
 data Document = Document [FunctionCall] deriving Show
 data FunctionCall = FunctionCall FunctionName [Argument] deriving Show

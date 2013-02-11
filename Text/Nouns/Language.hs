@@ -1,4 +1,4 @@
-module Language.Nouns.Language (nounsDef) where
+module Text.Nouns.Language (nounsDef) where
 
 import Text.Parsec
 import Text.Parsec.Token

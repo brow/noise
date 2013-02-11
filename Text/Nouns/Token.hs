@@ -1,7 +1,7 @@
-module Language.Nouns.Token where
+module Text.Nouns.Token where
 
 import qualified Text.Parsec.Token as T
-import qualified Language.Nouns.Language as Language
+import qualified Text.Nouns.Language as Language
 
 T.TokenParser { T.identifier = identifier
               , T.parens = parens
