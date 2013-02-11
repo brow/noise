@@ -1,8 +1,16 @@
-module Text.Nouns.Parser (sourceFile) where
+module Text.Nouns.Parser (parseFile) where
 
 import Text.ParserCombinators.Parsec
+import qualified Text.Parsec.String
 import qualified Text.Nouns.Parser.Token as Token
 import qualified Text.Nouns.Parser.AST as AST
+
+parseFile :: String -> IO AST.SourceFile
+parseFile file = do
+ result <- Text.Parsec.String.parseFromFile sourceFile file 
+ case result of
+   Left err -> error (show err)
+   Right ast -> return ast
 
 functionCall :: Parser AST.FunctionCall
 functionCall = do

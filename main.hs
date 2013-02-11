@@ -1,9 +1,5 @@
-import Text.Nouns.Parser
-import Text.Parsec.String
-import Text.Show.Pretty (ppShow)
+import Text.Nouns.Parser (parseFile)
+import Text.Nouns.Compiler (compile)
+import Text.Nouns.Renderer (render)
 
-main = do
-  result <- parseFromFile sourceFile "test.nouns"
-  case result of
-    Left err -> print err
-    Right ast -> putStr (ppShow ast)
+main = parseFile "test.nouns" >>= putStr . render . compile
