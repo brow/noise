@@ -1,0 +1,17 @@
+name:                nouns
+version:             0.1.0.0
+-- synopsis:
+-- description:
+-- license:
+-- license-file:        LICENSE
+author:              Tom Brow
+maintainer:          tebrow@gmail.com
+-- copyright:
+category:            Text
+build-type:          Simple
+cabal-version:       >=1.8
+
+executable nouns
+  main-is: Main.hs
+  -- other-modules:
+  build-depends:       base ==4.5.*, parsec ==3.1.*, blaze-svg ==0.3.*, blaze-markup ==0.5.*
