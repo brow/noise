@@ -7,5 +7,6 @@ compile :: AST.SourceFile -> Document
 compile (AST.SourceFile funcCalls) = Document (map runBuiltin funcCalls)
 
 runBuiltin :: AST.FunctionCall -> Element
-runBuiltin (AST.FunctionCall "rectangle" [x, y, w, h]) = Rectangle x y w h
+runBuiltin (AST.FunctionCall "rectangle" [x, y, w, h]) = 
+  Rectangle (Length x) (Length y) (Length w) (Length h)
 runBuiltin (AST.FunctionCall name _) = error ("No builtin function '" ++ name ++ "'")

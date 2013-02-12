@@ -6,4 +6,4 @@ data FunctionCall = FunctionCall FunctionName [Argument] deriving Show
 
 type FunctionName = String
 
-type Argument = Integer
+type Argument = Double

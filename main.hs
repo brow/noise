@@ -1,8 +1,8 @@
 import qualified System.Environment
-import System.Console.GetOpt as Options
-import Text.Nouns.Parser (parseFile)
-import Text.Nouns.Compiler (compile)
-import Text.Nouns.Renderer (render)
+import           System.Console.GetOpt
+import           Text.Nouns.Parser (parseFile)
+import           Text.Nouns.Compiler (compile)
+import           Text.Nouns.Renderer (render)
 
 main :: IO ()
 main = do
