@@ -2,10 +2,22 @@ module Text.Nouns.Parser.Token where
 
 import qualified Text.Parsec.Token as T
 import qualified Text.Nouns.Parser.Language as Language
+import Text.ParserCombinators.Parsec
 
-T.TokenParser { T.identifier = identifier
-              , T.parens = parens
-              , T.integer = integer
-              , T.commaSep = commaSeparated
-              , T.whiteSpace = whiteSpace
-              } = T.makeTokenParser Language.nounsDef
+identifier :: Parser String
+identifier = T.identifier tokenParser
+
+integer :: Parser Integer
+integer = T.integer tokenParser
+
+whiteSpace :: Parser ()
+whiteSpace = T.whiteSpace tokenParser
+
+parens :: Parser a -> Parser a
+parens = T.parens tokenParser
+
+commaSeparated :: Parser a -> Parser [a]
+commaSeparated = T.commaSep tokenParser
+
+tokenParser :: T.TokenParser st
+tokenParser = T.makeTokenParser Language.nounsDef

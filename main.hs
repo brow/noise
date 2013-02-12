@@ -4,6 +4,7 @@ import Text.Nouns.Parser (parseFile)
 import Text.Nouns.Compiler (compile)
 import Text.Nouns.Renderer (render)
 
+main :: IO ()
 main = do
   (flags, files, errors) <- getOptions
   runWithOptions flags files errors
