@@ -15,5 +15,5 @@ instance Renderable Document where
   renderToSvg (Document elems) = SVG.docTypeSvg (mapM_ renderToSvg elems)
 
 instance Renderable Element where
-  renderToSvg (Rectangle x y w h) = do
+  renderToSvg (Rectangle x y w h) =
     SVG.rect ! At.x x ! At.y y ! At.width w ! At.height h

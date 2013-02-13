@@ -10,7 +10,7 @@ main = do
   runWithOptions flags files errors
 
 runWithOptions :: [Flag] -> [String] -> [String] -> IO ()
-runWithOptions [] [file] [] = do
+runWithOptions [] [file] [] =
   parseFile file >>= putStr . render . compile
 runWithOptions _ _ _ = putStr helpText
 
@@ -18,7 +18,7 @@ data Flag = Help
 
 optionsSpec :: [OptDescr Flag]
 optionsSpec =
-  [ Option ['h'] ["help"] (NoArg Help) "Print this help text."
+  [ Option "h" ["help"] (NoArg Help) "Print this help text."
   ]
 
 getOptions :: IO ([Flag], [String], [String])
