@@ -1,8 +1,7 @@
 import qualified System.Environment
 import           System.Console.GetOpt
-import           Text.Nouns.Parser (parseFile)
-import           Text.Nouns.Compiler (compile)
-import           Text.Nouns.Renderer (render)
+import           System.IO (hPrint, stderr)
+import qualified Text.Nouns as Nouns
 
 main :: IO ()
 main = do
@@ -10,10 +9,13 @@ main = do
   runWithOptions flags files errors
 
 runWithOptions :: [Flag] -> [String] -> [String] -> IO ()
-runWithOptions [] [file] [] =
-  parseFile file >>= putStr . render . compile
-runWithOptions _ _ _ = putStr helpText
+runWithOptions [] [file] [] = do
+  result <- fmap Nouns.process $ readFile file
+  case result of
+    Left err -> hPrint stderr err
+    Right svg -> putStr svg
 
+runWithOptions _ _ _ = putStr helpText
 data Flag = Help
 
 optionsSpec :: [OptDescr Flag]

@@ -1,12 +1,25 @@
-module Text.Nouns.Compiler (compile) where
+module Text.Nouns.Compiler
+( compile
+, CompileError
+) where
 
+import Control.Monad.Instances ()
 import qualified Text.Nouns.Parser.AST as AST
 import Text.Nouns.Compiler.Document
 
-compile :: AST.SourceFile -> Document
-compile (AST.SourceFile funcCalls) = Document (map runBuiltin funcCalls)
+data CompileError = WrongNumberOfArgumentsError
+                  | UndefinedFunctionError
+                  deriving Show
 
-runBuiltin :: AST.FunctionCall -> Element
-runBuiltin (AST.FunctionCall "rectangle" [x, y, w, h]) = 
-  Rectangle (Length x) (Length y) (Length w) (Length h)
-runBuiltin (AST.FunctionCall name _) = error ("No builtin function '" ++ name ++ "'")
+compile :: AST.SourceFile -> Either CompileError Document
+compile (AST.SourceFile funcCalls) = do
+  elems <- mapM runBuiltin funcCalls
+  return $ Document elems
+
+runBuiltin :: AST.FunctionCall -> Either CompileError Element
+runBuiltin (AST.FunctionCall "rectangle" [x, y, w, h]) =
+  Right $ Rectangle (Length x) (Length y) (Length w) (Length h)
+runBuiltin (AST.FunctionCall "rectangle" _) =
+  Left WrongNumberOfArgumentsError
+runBuiltin (AST.FunctionCall name _) =
+  Left UndefinedFunctionError
