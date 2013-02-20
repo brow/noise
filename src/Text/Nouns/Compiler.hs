@@ -21,5 +21,5 @@ runBuiltin (AST.FunctionCall "rectangle" [x, y, w, h]) =
   Right $ Rectangle (Length x) (Length y) (Length w) (Length h)
 runBuiltin (AST.FunctionCall "rectangle" _) =
   Left WrongNumberOfArgumentsError
-runBuiltin (AST.FunctionCall name _) =
+runBuiltin (AST.FunctionCall _ _) =
   Left UndefinedFunctionError
