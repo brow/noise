@@ -31,7 +31,7 @@ test_compile_undefined =
 test_compile_wrong_num_args =
   assertFnCallFails
     (AST.FunctionCall "rectangle" [])
-    Compiler.WrongNumberOfArgumentsError
+    (Compiler.FunctionCallError Compiler.MissingArgumentError)
 
 test_compile_rectangle =
   assertFnCallCompilesTo

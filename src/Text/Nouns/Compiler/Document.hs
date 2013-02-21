@@ -17,5 +17,6 @@ data Document = Document [Element] deriving (Show, Eq)
 data Element = Rectangle { x :: Coordinate
                          , y :: Coordinate
                          , width :: Length
-                         , height :: Length }
+                         , height :: Length
+                         }
              deriving (Show, Eq)
