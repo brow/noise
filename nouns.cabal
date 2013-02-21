@@ -32,7 +32,7 @@ executable nouns
     blaze-markup ==0.5.*
 
 test-suite test
-  ghc-options: -Wall -fno-warn-missing-signatures
+  ghc-options: -Wall
   type: exitcode-stdio-1.0
   hs-source-dirs: tests src
   main-is: Main.hs

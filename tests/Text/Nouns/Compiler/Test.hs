@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -F -pgmF htfpp #-}
+{-# OPTIONS_GHC -F -pgmF htfpp -fno-warn-missing-signatures #-}
 
 module Text.Nouns.Compiler.Test where
 
