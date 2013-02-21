@@ -1,6 +1,6 @@
 module Text.Nouns.Compiler
 ( compile
-, CompileError
+, CompileError(..)
 ) where
 
 import Control.Monad.Instances ()
@@ -9,7 +9,7 @@ import Text.Nouns.Compiler.Document
 
 data CompileError = WrongNumberOfArgumentsError
                   | UndefinedFunctionError
-                  deriving Show
+                  deriving (Show, Eq)
 
 compile :: AST.SourceFile -> Either CompileError Document
 compile (AST.SourceFile funcCalls) = do
