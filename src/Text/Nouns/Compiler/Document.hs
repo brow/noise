@@ -1,16 +1,13 @@
 module Text.Nouns.Compiler.Document
 ( Coordinate
-, Length(..)
+, Length
 , Document(..)
 , Element(..)
 ) where
 
 type Coordinate = Length
 
-data Length = Length Double deriving (Eq)
-
-instance Show Length where
-  show (Length a) = show a
+type Length = Double
 
 data Document = Document [Element] deriving (Show, Eq)
 
@@ -19,4 +16,8 @@ data Element = Rectangle { x :: Coordinate
                          , width :: Length
                          , height :: Length
                          }
+             | Circle { cx :: Coordinate
+                      , cy :: Coordinate
+                      , r :: Length
+                      }
              deriving (Show, Eq)

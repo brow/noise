@@ -24,6 +24,7 @@ runBuiltin :: AST.FunctionCall -> Either CompileError D.Element
 runBuiltin (AST.FunctionCall name args) =
   case name of
     "rectangle" -> use B.rectangle
+    "circle" -> use B.circle
     _ -> Left UndefinedFunctionError
   where use function = case F.call function args of
           Left callError -> Left (FunctionCallError callError)

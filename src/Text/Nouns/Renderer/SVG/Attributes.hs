@@ -15,3 +15,13 @@ width = SVG.width . stringValue . show
 
 height :: Length -> Attribute
 height = SVG.height . stringValue . show
+
+cx :: Coordinate -> Attribute
+cx = SVG.cx . stringValue . show
+
+cy :: Coordinate -> Attribute
+cy = SVG.cy . stringValue . show
+
+r :: Length -> Attribute
+r = SVG.r . stringValue . show
+

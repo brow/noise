@@ -9,4 +9,11 @@ rectangle = do
   y <- requireArg
   width <- requireArg
   height <- requireArg
-  return $ D.Rectangle (D.Length x) (D.Length y) (D.Length width) (D.Length height)
+  return $ D.Rectangle x y width height
+
+circle :: Function D.Element
+circle = do
+  cx <- requireArg
+  cy <- requireArg
+  r <- requireArg
+  return $ D.Circle cx cy r

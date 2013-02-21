@@ -29,8 +29,7 @@ call :: Function a -> [Value] -> Either FunctionError a
 call function values = case result of
   Failure err -> Left err
   Success ret _ -> Right ret
-  where
-    result = runFunction function (ArgStack values)
+  where result = runFunction function (ArgStack values)
 
 requireArg :: Function Value
 requireArg = Function $ \args -> case args of

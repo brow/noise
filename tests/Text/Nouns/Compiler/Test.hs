@@ -10,30 +10,32 @@ import qualified Text.Nouns.Parser.AST as AST
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
-assertRightEqual x y = assertEqual x (Right y)
-assertLeftEqual x y = assertEqual x (Left y)
-
-assertFnCallCompilesTo :: AST.FunctionCall -> D.Element -> Assertion
-assertFnCallCompilesTo fnCall element =
-  assertRightEqual
+assertFnCallCompilesTo :: D.Element -> AST.FunctionCall -> Assertion
+assertFnCallCompilesTo element fnCall =
+  assertEqual
+    (Right $ D.Document [element])
     (Compiler.compile $ AST.SourceFile [fnCall])
-    (D.Document [element])
 
-assertFnCallFails :: AST.FunctionCall -> Compiler.CompileError -> Assertion
-assertFnCallFails fnCall =
-  assertLeftEqual $ Compiler.compile $ AST.SourceFile [fnCall]
+assertFnCallFails :: Compiler.CompileError -> AST.FunctionCall -> Assertion
+assertFnCallFails err fnCall =
+  assertEqual (Left err) $ Compiler.compile $ AST.SourceFile [fnCall]
 
 test_compile_undefined =
   assertFnCallFails
-    (AST.FunctionCall "squircle" [])
     Compiler.UndefinedFunctionError
+    (AST.FunctionCall "squircle" [])
 
 test_compile_wrong_num_args =
   assertFnCallFails
-    (AST.FunctionCall "rectangle" [])
     (Compiler.FunctionCallError Compiler.MissingArgumentError)
+    (AST.FunctionCall "rectangle" [])
 
 test_compile_rectangle =
   assertFnCallCompilesTo
+    (D.Rectangle 0 0 10 10)
     (AST.FunctionCall "rectangle" [0, 0, 10, 10])
-    (D.Rectangle (D.Length 0) (D.Length 0) (D.Length 10) (D.Length 10))
+
+test_compile_circle =
+  assertFnCallCompilesTo
+    (D.Circle 50 50 100)
+    (AST.FunctionCall "circle" [50, 50, 100])

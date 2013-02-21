@@ -17,3 +17,5 @@ instance Renderable D.Document where
 instance Renderable D.Element where
   renderToSvg (D.Rectangle x y w h) =
     SVG.rect ! At.x x ! At.y y ! At.width w ! At.height h
+  renderToSvg (D.Circle cx cy r) =
+    SVG.circle ! At.cx cx ! At.cy cy ! At.r r
