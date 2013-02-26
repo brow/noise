@@ -23,19 +23,27 @@ assertFnCallFails err fnCall =
 test_compile_undefined =
   assertFnCallFails
     Compiler.UndefinedFunctionError
-    (AST.FunctionCall "squircle" [])
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["shape", "squircle"])
+      [])
 
 test_compile_wrong_num_args =
   assertFnCallFails
     (Compiler.FunctionCallError Compiler.MissingArgumentError)
-    (AST.FunctionCall "rectangle" [])
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["shape", "rectangle"])
+      [])
 
 test_compile_rectangle =
   assertFnCallCompilesTo
     (D.Rectangle 0 0 10 10)
-    (AST.FunctionCall "rectangle" [0, 0, 10, 10])
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["shape", "rectangle"])
+      [0, 0, 10, 10])
 
 test_compile_circle =
   assertFnCallCompilesTo
     (D.Circle 50 50 100)
-    (AST.FunctionCall "circle" [50, 50, 100])
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["shape", "circle"])
+      [50, 50, 100])

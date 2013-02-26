@@ -1,9 +1,11 @@
 module Text.Nouns.Parser.AST where
 
-data SourceFile = SourceFile [FunctionCall] deriving Show
+data SourceFile = SourceFile [FunctionCall] deriving (Show, Eq)
 
-data FunctionCall = FunctionCall FunctionName [Argument] deriving Show
+data FunctionCall = FunctionCall QualifiedIdentifier [Argument] deriving (Show, Eq)
 
-type FunctionName = String
+data QualifiedIdentifier = QualifiedIdentifier [Identifier] deriving (Show, Eq)
+
+type Identifier = String
 
 type Argument = Double

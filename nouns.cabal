@@ -38,5 +38,6 @@ test-suite test
   main-is: Main.hs
   build-depends:
     base ==4.5.*,
+    parsec ==3.1.*,
     HTF ==0.10.*,
     HUnit ==1.2.*

@@ -4,7 +4,7 @@ module Text.Nouns.Parser
 , ParseError
 ) where
 
-import Text.ParserCombinators.Parsec (Parser, ParseError, many, eof)
+import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof)
 import qualified Text.Parsec.Prim
 import qualified Text.Parsec.String
 import qualified Text.Nouns.Parser.Token as Token
@@ -16,9 +16,14 @@ parse = Text.Parsec.Prim.parse sourceFile ""
 parseFile :: String -> IO (Either ParseError AST.SourceFile)
 parseFile = Text.Parsec.String.parseFromFile sourceFile
 
+qualifiedIdentifier :: Parser AST.QualifiedIdentifier
+qualifiedIdentifier = do
+  components <- sepBy1 Token.identifier Token.dot
+  return $ AST.QualifiedIdentifier components
+
 functionCall :: Parser AST.FunctionCall
 functionCall = do
-  name <- Token.identifier
+  name <- qualifiedIdentifier
   args <- Token.parens (Token.commaSeparated Token.number)
   return $ AST.FunctionCall name args
 
