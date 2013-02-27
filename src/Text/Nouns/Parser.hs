@@ -5,6 +5,7 @@ module Text.Nouns.Parser
 ) where
 
 import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof)
+import Text.Parsec.Prim (getPosition)
 import qualified Text.Parsec.Prim
 import qualified Text.Parsec.String
 import qualified Text.Nouns.Parser.Token as Token
@@ -23,9 +24,11 @@ qualifiedIdentifier = do
 
 functionCall :: Parser AST.FunctionCall
 functionCall = do
+  start <- getPosition
   name <- qualifiedIdentifier
   args <- Token.parens (Token.commaSeparated Token.number)
-  return $ AST.FunctionCall name args
+  end <- getPosition
+  return $ AST.FunctionCall name args (start, end)
 
 sourceFile :: Parser AST.SourceFile
 sourceFile = do

@@ -11,8 +11,8 @@ import qualified Text.Nouns.Compiler.Function as F
 import qualified Text.Nouns.Compiler.Builtin as B
 import Text.Nouns.Compiler.Function (FunctionError(..))
 
-data CompileError = FunctionCallError FunctionError
-                  | UndefinedFunctionError
+data CompileError = FunctionCallError AST.SourceRange FunctionError
+                  | UndefinedFunctionError AST.SourceRange
                   deriving (Show, Eq)
 
 compile :: AST.SourceFile -> Either CompileError D.Document
@@ -21,11 +21,11 @@ compile (AST.SourceFile funcCalls) = do
   return $ D.Document elems
 
 runBuiltin :: AST.FunctionCall -> Either CompileError D.Element
-runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers) args) =
+runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers) args srcRange) =
   case identifiers of
     ["shape", "rectangle"] -> use B.rectangle
     ["shape", "circle"]    -> use B.circle
-    _ -> Left UndefinedFunctionError
+    _ -> Left (UndefinedFunctionError srcRange)
   where use function = case F.call function args of
-          Left callError -> Left (FunctionCallError callError)
+          Left callError -> Left (FunctionCallError srcRange callError)
           Right element -> Right element
