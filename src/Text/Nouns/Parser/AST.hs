@@ -1,11 +1,12 @@
 module Text.Nouns.Parser.AST
 ( SourceRange
-, sourceRange
+, oneLineRange
+, zeroRange
 , SourceFile(..)
 , FunctionCall(..)
 , QualifiedIdentifier(..)
 , Identifier
-, Argument
+, Argument(..)
 ) where
 
 import qualified Text.Parsec.Pos as Parsec
@@ -20,8 +21,11 @@ data QualifiedIdentifier = QualifiedIdentifier [Identifier] deriving (Show, Eq)
 
 type Identifier = String
 
-type Argument = Double
+data Argument = Argument Double SourceRange deriving (Show, Eq)
 
-sourceRange :: Parsec.SourceName -> Int -> SourceRange
-sourceRange name len = ( Parsec.newPos name 1 1
-                       , Parsec.newPos name 1 (1 + len))
+oneLineRange :: Parsec.SourceName -> Int -> Int -> SourceRange
+oneLineRange name col len = ( Parsec.newPos name 1 col
+                            , Parsec.newPos name 1 (col + len))
+
+zeroRange :: SourceRange
+zeroRange = oneLineRange "" 1 0

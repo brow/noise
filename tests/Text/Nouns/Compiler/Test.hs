@@ -20,37 +20,41 @@ assertFnCallFails :: Compiler.CompileError -> AST.FunctionCall -> Assertion
 assertFnCallFails err fnCall =
   assertEqual (Left err) $ Compiler.compile $ AST.SourceFile [fnCall]
 
-zeroRange :: AST.SourceRange
-zeroRange = AST.sourceRange "" 0
-
 test_compile_undefined =
   assertFnCallFails
-    (Compiler.UndefinedFunctionError zeroRange)
+    (Compiler.UndefinedFunctionError AST.zeroRange)
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["shape", "squircle"])
       []
-      zeroRange)
+      AST.zeroRange)
 
 test_compile_wrong_num_args =
   assertFnCallFails
-    (Compiler.FunctionCallError zeroRange Compiler.MissingArgumentError)
+    (Compiler.FunctionCallError AST.zeroRange Compiler.MissingArgumentError)
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["shape", "rectangle"])
       []
-      zeroRange)
+      AST.zeroRange)
 
 test_compile_rectangle =
   assertFnCallCompilesTo
     (D.Rectangle 0 0 10 10)
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["shape", "rectangle"])
-      [0, 0, 10, 10]
-      zeroRange)
+      [ AST.Argument 0 AST.zeroRange
+      , AST.Argument 0 AST.zeroRange
+      , AST.Argument 10 AST.zeroRange
+      , AST.Argument 10 AST.zeroRange
+      ]
+      AST.zeroRange)
 
 test_compile_circle =
   assertFnCallCompilesTo
     (D.Circle 50 50 100)
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["shape", "circle"])
-      [50, 50, 100]
-      zeroRange)
+      [ AST.Argument 50 AST.zeroRange
+      , AST.Argument 50 AST.zeroRange
+      , AST.Argument 100 AST.zeroRange
+      ]
+      AST.zeroRange)

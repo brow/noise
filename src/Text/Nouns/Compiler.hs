@@ -20,12 +20,16 @@ compile (AST.SourceFile funcCalls) = do
   elems <- mapM runBuiltin funcCalls
   return $ D.Document elems
 
+compileArgument :: AST.Argument -> F.Value
+compileArgument (AST.Argument val _) = val
+
 runBuiltin :: AST.FunctionCall -> Either CompileError D.Element
 runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers) args srcRange) =
   case identifiers of
     ["shape", "rectangle"] -> use B.rectangle
     ["shape", "circle"]    -> use B.circle
     _ -> Left (UndefinedFunctionError srcRange)
-  where use function = case F.call function args of
+  where use function = case F.call function values of
           Left callError -> Left (FunctionCallError srcRange callError)
           Right element -> Right element
+        values = map compileArgument args

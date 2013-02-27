@@ -20,12 +20,16 @@ test_function_no_args =
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["function"])
       []
-      (AST.sourceRange "" 10))
+      (AST.oneLineRange "" 1 10))
 
 test_function_qualified =
   assertParseFnCall
     "shape.rectangle(0,0,100,200)"
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["shape","rectangle"])
-      [0, 0, 100, 200]
-      (AST.sourceRange "" 28))
+      [ AST.Argument 0 (AST.oneLineRange "" 17 1)
+      , AST.Argument 0 (AST.oneLineRange "" 19 1)
+      , AST.Argument 100 (AST.oneLineRange "" 21 3)
+      , AST.Argument 200 (AST.oneLineRange "" 25 3)
+      ]
+      (AST.oneLineRange "" 1 28))

@@ -22,11 +22,18 @@ qualifiedIdentifier = do
   components <- sepBy1 Token.identifier Token.dot
   return $ AST.QualifiedIdentifier components
 
+argument :: Parser AST.Argument
+argument = do
+  start <- getPosition
+  value <- Token.number
+  end <- getPosition
+  return $ AST.Argument value (start, end)
+
 functionCall :: Parser AST.FunctionCall
 functionCall = do
   start <- getPosition
   name <- qualifiedIdentifier
-  args <- Token.parens (Token.commaSeparated Token.number)
+  args <- Token.parens (Token.commaSeparated argument)
   end <- getPosition
   return $ AST.FunctionCall name args (start, end)
 
