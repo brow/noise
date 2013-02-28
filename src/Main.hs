@@ -1,6 +1,7 @@
 import qualified System.Environment
 import           System.Console.GetOpt
 import           System.IO (hPrint, stderr)
+import           Data.Maybe (fromMaybe)
 import qualified Text.Nouns as Nouns
 
 main :: IO ()
@@ -10,10 +11,10 @@ main = do
 
 runWithOptions :: [Flag] -> [String] -> [String] -> IO ()
 runWithOptions [] [file] [] = do
-  result <- fmap Nouns.process $ readFile file
-  case result of
-    Left err -> hPrint stderr err
-    Right svg -> putStr svg
+  source <- readFile file
+  let Nouns.Output svg errors _ = Nouns.process source
+  mapM_ (hPrint stderr) errors
+  putStr $ fromMaybe "" svg
 
 runWithOptions _ _ _ = putStr helpText
 data Flag = Help
