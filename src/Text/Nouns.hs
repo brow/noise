@@ -1,7 +1,7 @@
 module Text.Nouns
 ( Output(..)
 , Error
-, Syntax.Highlighting(..)
+, Syntax.Syntax(..)
 , process
 ) where
 
@@ -17,7 +17,7 @@ data Error = ParseError Parser.ParseError
 data Output = Output
   { svg :: Maybe String
   , errors :: [Error]
-  , highlighting :: Maybe Syntax.Highlighting }
+  , syntax :: Maybe Syntax.Syntax }
 
 process :: String -> Output
 process src =
@@ -25,15 +25,15 @@ process src =
     Left err -> Output
       { svg = Nothing
       , errors = [ParseError err]
-      , highlighting = Nothing }
+      , syntax = Nothing }
     Right ast ->
-      let hl = Syntax.highlight src ast
+      let hl = Syntax.syntaxify src ast
       in case Compiler.compile ast of
         Left err -> Output
           { svg = Nothing
           , errors = [CompileError err]
-          , highlighting = Just hl }
+          , syntax = Just hl }
         Right document -> Output
           { svg = Just (render document)
           , errors = []
-          , highlighting = Just hl }
+          , syntax = Just hl }
