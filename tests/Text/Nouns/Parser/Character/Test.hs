@@ -3,12 +3,12 @@
 module Text.Nouns.Parser.Character.Test where
 
 import Test.Framework
-import Text.Parsec.Pos as Pos
-import Text.Nouns.Parser.Character as Character
+import qualified Text.Parsec.Pos as Pos
+import qualified Text.Nouns.Parser.Character as Character
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
-data SourceAndLocation = SourceAndLocation String Location deriving (Show)
+data SourceAndLocation = SourceAndLocation String Character.Location deriving (Show)
 
 instance Arbitrary SourceAndLocation where
   arbitrary = do
@@ -16,10 +16,16 @@ instance Arbitrary SourceAndLocation where
     location <- choose (0, length source - 1)
     return $ SourceAndLocation source location
 
-prop_initial_pos :: String -> Bool
-prop_initial_pos src = Character.locationAt src (Pos.initialPos "") == Just 0
+test_location_at = assertEqual (Just 1) $
+  Character.locationAt "abc" (Pos.newPos "" 1 2)
 
-prop_correct :: String -> SourceAndLocation -> Property
-prop_correct name (SourceAndLocation source loc) =
-  not (null source) ==> locationAt source pos == Just loc
-  where pos = Pos.updatePosString (initialPos name) $ take loc source
+test_range_at = assertEqual (Just (1,1)) $
+  Character.rangeAt "abc" (Pos.newPos "" 1 2, Pos.newPos "" 1 3)
+
+prop_location_zero :: String -> Bool
+prop_location_zero src = Character.locationAt src (Pos.initialPos "") == Just 0
+
+prop_location :: String -> SourceAndLocation -> Property
+prop_location name (SourceAndLocation source loc) =
+  not (null source) ==> Character.locationAt source pos == Just loc
+  where pos = Pos.updatePosString (Pos.initialPos name) $ take loc source

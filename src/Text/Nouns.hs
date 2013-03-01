@@ -1,5 +1,7 @@
 module Text.Nouns
 ( Output(..)
+, Error
+, Syntax.Highlighting(..)
 , process
 ) where
 
@@ -25,7 +27,7 @@ process src =
       , errors = [ParseError err]
       , highlighting = Nothing }
     Right ast ->
-      let hl = Syntax.highlight ast
+      let hl = Syntax.highlight src ast
       in case Compiler.compile ast of
         Left err -> Output
           { svg = Nothing
