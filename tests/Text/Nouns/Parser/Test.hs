@@ -11,14 +11,14 @@ import qualified Text.Nouns.Parser.AST as AST
 
 assertParseFnCall :: String -> AST.FunctionCall -> Assertion
 assertParseFnCall str expected = case Parser.parse str of
-  Right ast -> assertEqual ast (AST.SourceFile [expected])
+  Right ast -> assertEqual (AST.SourceFile [expected]) ast
   Left err -> assertFailure $ "parse failed: " ++ show err
 
 test_function_no_args =
   assertParseFnCall
     "function()"
     (AST.FunctionCall
-      (AST.QualifiedIdentifier ["function"])
+      (AST.QualifiedIdentifier ["function"] (AST.oneLineRange "" 1 8))
       []
       (AST.oneLineRange "" 1 10))
 
@@ -26,7 +26,7 @@ test_function_qualified =
   assertParseFnCall
     "shape.rectangle(0,0,100,200)"
     (AST.FunctionCall
-      (AST.QualifiedIdentifier ["shape","rectangle"])
+      (AST.QualifiedIdentifier ["shape","rectangle"] (AST.oneLineRange "" 1 15))
       [ AST.Argument 0 (AST.oneLineRange "" 17 1)
       , AST.Argument 0 (AST.oneLineRange "" 19 1)
       , AST.Argument 100 (AST.oneLineRange "" 21 3)

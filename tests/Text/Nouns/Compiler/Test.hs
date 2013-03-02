@@ -24,7 +24,7 @@ test_compile_undefined =
   assertFnCallFails
     (Compiler.UndefinedFunctionError AST.zeroRange)
     (AST.FunctionCall
-      (AST.QualifiedIdentifier ["shape", "squircle"])
+      (AST.QualifiedIdentifier ["shape", "squircle"] AST.zeroRange)
       []
       AST.zeroRange)
 
@@ -32,7 +32,7 @@ test_compile_wrong_num_args =
   assertFnCallFails
     (Compiler.FunctionCallError AST.zeroRange Compiler.MissingArgumentError)
     (AST.FunctionCall
-      (AST.QualifiedIdentifier ["shape", "rectangle"])
+      (AST.QualifiedIdentifier ["shape", "rectangle"] AST.zeroRange)
       []
       AST.zeroRange)
 
@@ -40,7 +40,7 @@ test_compile_rectangle =
   assertFnCallCompilesTo
     (D.Rectangle 0 0 10 10)
     (AST.FunctionCall
-      (AST.QualifiedIdentifier ["shape", "rectangle"])
+      (AST.QualifiedIdentifier ["shape", "rectangle"] AST.zeroRange)
       [ AST.Argument 0 AST.zeroRange
       , AST.Argument 0 AST.zeroRange
       , AST.Argument 10 AST.zeroRange
@@ -52,7 +52,7 @@ test_compile_circle =
   assertFnCallCompilesTo
     (D.Circle 50 50 100)
     (AST.FunctionCall
-      (AST.QualifiedIdentifier ["shape", "circle"])
+      (AST.QualifiedIdentifier ["shape", "circle"] AST.zeroRange)
       [ AST.Argument 50 AST.zeroRange
       , AST.Argument 50 AST.zeroRange
       , AST.Argument 100 AST.zeroRange

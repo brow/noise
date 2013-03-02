@@ -24,7 +24,7 @@ compileArgument :: AST.Argument -> F.Value
 compileArgument (AST.Argument val _) = val
 
 runBuiltin :: AST.FunctionCall -> Either CompileError D.Element
-runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers) args srcRange) =
+runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers _) args srcRange) =
   case identifiers of
     ["shape", "rectangle"] -> use B.rectangle
     ["shape", "circle"]    -> use B.circle

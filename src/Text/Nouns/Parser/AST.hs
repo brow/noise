@@ -17,7 +17,7 @@ data SourceFile = SourceFile [FunctionCall] deriving (Show, Eq)
 
 data FunctionCall = FunctionCall QualifiedIdentifier [Argument] SourceRange deriving (Show, Eq)
 
-data QualifiedIdentifier = QualifiedIdentifier [Identifier] deriving (Show, Eq)
+data QualifiedIdentifier = QualifiedIdentifier [Identifier] SourceRange deriving (Show, Eq)
 
 type Identifier = String
 

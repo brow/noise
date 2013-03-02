@@ -17,12 +17,18 @@ assertSyntax hl str = case Parser.parse str of
 test_syntaxify_function = assertSyntax
   Syntax { argumentRanges = [ (9,1)
                             , (11,2)
-                            ]}
-  "function(1,22)"
+                            ]
+         , identifierRanges = [ (0,8) ]
+         }
+  "fun.tion(1,22)"
 
 test_syntaxify_functions = assertSyntax
   Syntax { argumentRanges = [ (3, 1)
                             , (5, 2)
                             , (13, 3)
-                            ]}
+                            ]
+         , identifierRanges = [ (0,2)
+                              , (9,3)
+                              ]
+         }
   "fn(1,22) fn2(333)"

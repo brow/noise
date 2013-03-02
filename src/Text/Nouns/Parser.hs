@@ -19,8 +19,10 @@ parseFile = Text.Parsec.String.parseFromFile sourceFile
 
 qualifiedIdentifier :: Parser AST.QualifiedIdentifier
 qualifiedIdentifier = do
+  start <- getPosition
   components <- sepBy1 Token.identifier Token.dot
-  return $ AST.QualifiedIdentifier components
+  end <- getPosition
+  return $ AST.QualifiedIdentifier components (start, end)
 
 argument :: Parser AST.Argument
 argument = do
