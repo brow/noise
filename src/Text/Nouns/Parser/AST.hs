@@ -1,5 +1,6 @@
 module Text.Nouns.Parser.AST
 ( SourceRange
+, rangeInSource
 , oneLineRange
 , zeroRange
 , SourceFile(..)
@@ -29,3 +30,12 @@ oneLineRange name col len = ( Parsec.newPos name 1 col
 
 zeroRange :: SourceRange
 zeroRange = oneLineRange "" 1 0
+
+class HasSourceRange a where
+  rangeInSource :: a -> SourceRange
+
+instance HasSourceRange QualifiedIdentifier where
+  rangeInSource (QualifiedIdentifier _ r) = r
+
+instance HasSourceRange Argument where
+  rangeInSource (Argument _ r) = r

@@ -28,8 +28,7 @@ syntaxify src (AST.SourceFile fnCalls) = mconcat $ map (syntaxifyFnCall src) fnC
 
 syntaxifyFnCall :: String -> AST.FunctionCall -> Syntax
 syntaxifyFnCall src (AST.FunctionCall name args _) =
-  empty { identifierRanges = mapMaybe idRange [name]
-        , argumentRanges = mapMaybe argRange args
+  empty { identifierRanges = mapMaybe charRange [name]
+        , argumentRanges = mapMaybe charRange args
         }
-  where argRange (AST.Argument _ r) = Character.rangeAt src r
-        idRange (AST.QualifiedIdentifier _ r) = Character.rangeAt src r
+  where charRange x = Character.rangeAt src $ AST.rangeInSource x
