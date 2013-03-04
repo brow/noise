@@ -39,3 +39,6 @@ instance HasSourceRange QualifiedIdentifier where
 
 instance HasSourceRange Argument where
   rangeInSource (Argument _ r) = r
+
+instance HasSourceRange FunctionCall where
+  rangeInSource (FunctionCall _ _ r) = r

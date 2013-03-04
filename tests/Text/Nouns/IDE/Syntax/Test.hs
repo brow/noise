@@ -19,6 +19,7 @@ test_syntaxify_function = assertSyntax
                             , (11,2)
                             ]
          , identifierRanges = [ (0,8) ]
+         , functionCallRanges = [ (0,14) ]
          }
   "fun.tion(1,22)"
 
@@ -30,5 +31,8 @@ test_syntaxify_functions = assertSyntax
          , identifierRanges = [ (0,2)
                               , (9,3)
                               ]
+         , functionCallRanges = [ (0,9)
+                                , (9,8)
+                                ]
          }
   "fn(1,22) fn2(333)"
