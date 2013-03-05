@@ -11,7 +11,7 @@ import qualified Text.Nouns.Parser.AST as AST
 
 assertParseFnCall :: String -> AST.FunctionCall -> Assertion
 assertParseFnCall str expected = case Parser.parse str of
-  Right ast -> assertEqual (AST.SourceFile [expected]) ast
+  Right ast -> assertEqual (AST.SourceFile [expected] (AST.rangeInSource expected)) ast
   Left err -> assertFailure $ "parse failed: " ++ show err
 
 test_function_no_args =

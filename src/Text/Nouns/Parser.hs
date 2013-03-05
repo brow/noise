@@ -41,6 +41,8 @@ functionCall = do
 
 sourceFile :: Parser AST.SourceFile
 sourceFile = do
+  start <- getPosition
   Token.whiteSpace
   calls <- many functionCall
-  eof >> return (AST.SourceFile calls)
+  end <- getPosition
+  eof >> return (AST.SourceFile calls (start, end))

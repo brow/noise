@@ -1,5 +1,6 @@
 module Text.Nouns.Parser.AST
 ( SourceRange
+, HasSourceRange
 , rangeInSource
 , oneLineRange
 , zeroRange
@@ -14,7 +15,7 @@ import qualified Text.Parsec.Pos as Parsec
 
 type SourceRange = (Parsec.SourcePos, Parsec.SourcePos)
 
-data SourceFile = SourceFile [FunctionCall] deriving (Show, Eq)
+data SourceFile = SourceFile [FunctionCall] SourceRange deriving (Show, Eq)
 
 data FunctionCall = FunctionCall QualifiedIdentifier [Argument] SourceRange deriving (Show, Eq)
 
@@ -33,6 +34,9 @@ zeroRange = oneLineRange "" 1 0
 
 class HasSourceRange a where
   rangeInSource :: a -> SourceRange
+
+instance HasSourceRange SourceFile where
+  rangeInSource (SourceFile _ r) = r
 
 instance HasSourceRange QualifiedIdentifier where
   rangeInSource (QualifiedIdentifier _ r) = r

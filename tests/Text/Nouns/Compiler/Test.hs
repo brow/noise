@@ -14,11 +14,11 @@ assertFnCallCompilesTo :: D.Element -> AST.FunctionCall -> Assertion
 assertFnCallCompilesTo element fnCall =
   assertEqual
     (Right $ D.Document [element])
-    (Compiler.compile $ AST.SourceFile [fnCall])
+    (Compiler.compile $ AST.SourceFile [fnCall] AST.zeroRange)
 
 assertFnCallFails :: Compiler.CompileError -> AST.FunctionCall -> Assertion
 assertFnCallFails err fnCall =
-  assertEqual (Left err) $ Compiler.compile $ AST.SourceFile [fnCall]
+  assertEqual (Left err) $ Compiler.compile $ AST.SourceFile [fnCall] AST.zeroRange
 
 test_compile_undefined =
   assertFnCallFails

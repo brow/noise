@@ -16,7 +16,7 @@ data CompileError = FunctionCallError AST.SourceRange FunctionError
                   deriving (Show, Eq)
 
 compile :: AST.SourceFile -> Either CompileError D.Document
-compile (AST.SourceFile funcCalls) = do
+compile (AST.SourceFile funcCalls _) = do
   elems <- mapM runBuiltin funcCalls
   return $ D.Document elems
 
