@@ -1,8 +1,9 @@
 import qualified System.Environment
 import           System.Console.GetOpt
 import           System.IO (hPrint, stderr)
-import           Data.Maybe (fromMaybe)
-import qualified Text.Nouns as Nouns
+import qualified Text.Nouns.Parser as Parser
+import qualified Text.Nouns.Compiler as Compiler
+import           Text.Nouns.Renderer (render)
 
 main :: IO ()
 main = do
@@ -12,9 +13,11 @@ main = do
 runWithOptions :: [Flag] -> [String] -> [String] -> IO ()
 runWithOptions [] [file] [] = do
   source <- readFile file
-  let Nouns.Output svg errors _ = Nouns.process source
-  mapM_ (hPrint stderr) errors
-  putStr $ fromMaybe "" svg
+  case Parser.parse source of
+    Left err -> hPrint stderr err
+    Right ast -> case Compiler.compile ast of
+      Left err -> hPrint stderr err
+      Right doc -> putStr (render doc)
 
 runWithOptions _ _ _ = putStr helpText
 data Flag = Help
