@@ -28,12 +28,25 @@ test_compile_undefined =
       []
       AST.zeroRange)
 
-test_compile_wrong_num_args =
+test_compile_missing_args =
   assertFnCallFails
     (Compiler.FunctionCallError AST.zeroRange Compiler.MissingArgumentError)
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["shape", "rectangle"] AST.zeroRange)
       []
+      AST.zeroRange)
+
+test_compile_too_many_args =
+  assertFnCallFails
+    (Compiler.FunctionCallError AST.zeroRange Compiler.TooManyArgumentsError)
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["shape", "rectangle"] AST.zeroRange)
+      [ AST.Argument 0 AST.zeroRange
+      , AST.Argument 0 AST.zeroRange
+      , AST.Argument 10 AST.zeroRange
+      , AST.Argument 10 AST.zeroRange
+      , AST.Argument 10 AST.zeroRange
+      ]
       AST.zeroRange)
 
 test_compile_rectangle =

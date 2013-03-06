@@ -10,7 +10,9 @@ type Value = Double
 
 data ArgStack = ArgStack [Value]
 
-data FunctionError = MissingArgumentError deriving (Show, Eq)
+data FunctionError = MissingArgumentError
+                   | TooManyArgumentsError
+                   deriving (Show, Eq)
 
 data Result a = Success a ArgStack | Failure FunctionError
 
@@ -27,8 +29,9 @@ instance Monad Function where
 
 call :: Function a -> [Value] -> Either FunctionError a
 call function values = case result of
-  Failure err -> Left err
-  Success ret _ -> Right ret
+  Failure err                -> Left err
+  Success _ (ArgStack (_:_)) -> Left TooManyArgumentsError
+  Success ret _              -> Right ret
   where result = runFunction function (ArgStack values)
 
 requireArg :: Function Value
