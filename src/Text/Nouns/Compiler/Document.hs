@@ -15,6 +15,7 @@ data Element = Rectangle { x :: Coordinate
                          , y :: Coordinate
                          , width :: Length
                          , height :: Length
+                         , cornerRadius :: Length
                          }
              | Circle { cx :: Coordinate
                       , cy :: Coordinate

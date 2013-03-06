@@ -5,6 +5,7 @@ module Text.Nouns.Compiler
 ) where
 
 import Control.Monad.Instances ()
+import Data.Either (partitionEithers)
 import qualified Text.Nouns.Parser.AST as AST
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
@@ -20,8 +21,9 @@ compile (AST.SourceFile funcCalls _) = do
   elems <- mapM runBuiltin funcCalls
   return $ D.Document elems
 
-compileArgument :: AST.Argument -> F.Value
-compileArgument (AST.Argument val _) = val
+compileArgument :: AST.Argument -> Either F.Value (String, F.Value)
+compileArgument (AST.PositionalArgument (AST.Value val _) _) = Left val
+compileArgument (AST.KeywordArgument keyword (AST.Value val _) _) = Right (keyword, val)
 
 runBuiltin :: AST.FunctionCall -> Either CompileError D.Element
 runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers _) args srcRange) =
@@ -29,7 +31,8 @@ runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers _) args srcRan
     ["shape", "rectangle"] -> use B.rectangle
     ["shape", "circle"]    -> use B.circle
     _ -> Left (UndefinedFunctionError srcRange)
-  where use function = case F.call function values of
+  where use function = case F.call function posArgs kwArgs of
           Left callError -> Left (FunctionCallError srcRange callError)
           Right element -> Right element
-        values = map compileArgument args
+        (posArgs, kwArgs) = partitionEithers $ map compileArgument args
+

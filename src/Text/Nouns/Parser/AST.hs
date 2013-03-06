@@ -9,6 +9,7 @@ module Text.Nouns.Parser.AST
 , QualifiedIdentifier(..)
 , Identifier
 , Argument(..)
+, Value(..)
 ) where
 
 import qualified Text.Parsec.Pos as Parsec
@@ -23,7 +24,11 @@ data QualifiedIdentifier = QualifiedIdentifier [Identifier] SourceRange deriving
 
 type Identifier = String
 
-data Argument = Argument Double SourceRange deriving (Show, Eq)
+data Value = Value Double SourceRange deriving (Show, Eq)
+
+data Argument = KeywordArgument Identifier Value SourceRange
+              | PositionalArgument Value SourceRange
+              deriving (Show, Eq)
 
 oneLineRange :: Parsec.SourceName -> Int -> Int -> SourceRange
 oneLineRange name col len = ( Parsec.newPos name 1 col
@@ -42,7 +47,8 @@ instance HasSourceRange QualifiedIdentifier where
   rangeInSource (QualifiedIdentifier _ r) = r
 
 instance HasSourceRange Argument where
-  rangeInSource (Argument _ r) = r
+  rangeInSource (KeywordArgument _ _ r) = r
+  rangeInSource (PositionalArgument _ r) = r
 
 instance HasSourceRange FunctionCall where
   rangeInSource (FunctionCall _ _ r) = r

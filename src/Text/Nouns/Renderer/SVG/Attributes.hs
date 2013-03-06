@@ -25,3 +25,5 @@ cy = SVG.cy . stringValue . show
 r :: Length -> Attribute
 r = SVG.r . stringValue . show
 
+rx :: Coordinate -> Attribute
+rx = SVG.rx . stringValue . show

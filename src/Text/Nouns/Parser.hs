@@ -5,7 +5,7 @@ module Text.Nouns.Parser
 ) where
 
 import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof)
-import Text.Parsec.Prim (getPosition)
+import Text.Parsec.Prim (getPosition, try, (<|>))
 import qualified Text.Parsec.Prim
 import qualified Text.Parsec.String
 import qualified Text.Nouns.Parser.Token as Token
@@ -24,12 +24,31 @@ qualifiedIdentifier = do
   end <- getPosition
   return $ AST.QualifiedIdentifier components (start, end)
 
-argument :: Parser AST.Argument
-argument = do
+value :: Parser AST.Value
+value = do
   start <- getPosition
-  value <- Token.number
+  number <- Token.number
   end <- getPosition
-  return $ AST.Argument value (start, end)
+  return $ AST.Value number (start, end)
+
+keywordArgument :: Parser AST.Argument
+keywordArgument = do
+  start <- getPosition
+  keyword <- Token.identifier
+  Token.symbol "="
+  val <- value
+  end <- getPosition
+  return $ AST.KeywordArgument keyword val (start, end)
+
+positionalArgument :: Parser AST.Argument
+positionalArgument = do
+  start <- getPosition
+  val <- value
+  end <- getPosition
+  return $ AST.PositionalArgument val (start, end)
+
+argument :: Parser AST.Argument
+argument = try keywordArgument <|> positionalArgument
 
 functionCall :: Parser AST.FunctionCall
 functionCall = do

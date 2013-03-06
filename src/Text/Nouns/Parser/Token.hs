@@ -5,6 +5,7 @@ module Text.Nouns.Parser.Token
 , parens
 , commaSeparated
 , dot
+, symbol
 ) where
 
 import qualified Text.Parsec.Token as T
@@ -35,6 +36,9 @@ commaSeparated = T.commaSep tokenParser
 
 dot :: Parser String
 dot = T.dot tokenParser
+
+symbol :: String -> Parser String
+symbol = T.symbol tokenParser
 
 lexeme :: Parser a -> Parser a
 lexeme = T.lexeme tokenParser

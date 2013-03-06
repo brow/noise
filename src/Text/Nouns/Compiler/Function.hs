@@ -3,14 +3,17 @@ module Text.Nouns.Compiler.Function
 , FunctionError(..)
 , Value
 , requireArg
+, acceptArg
 , call
 ) where
 
+type Keyword = String
+
 type Value = Double
 
-data ArgStack = ArgStack [Value]
+data ArgStack = ArgStack [Value] [(Keyword,Value)]
 
-data FunctionError = MissingArgumentError
+data FunctionError = MissingArgumentError Keyword
                    | TooManyArgumentsError
                    deriving (Show, Eq)
 
@@ -27,14 +30,23 @@ instance Monad Function where
         let Function r' = f x
         in  r' args'
 
-call :: Function a -> [Value] -> Either FunctionError a
-call function values = case result of
-  Failure err                -> Left err
-  Success _ (ArgStack (_:_)) -> Left TooManyArgumentsError
-  Success ret _              -> Right ret
-  where result = runFunction function (ArgStack values)
+call :: Function a -> [Value] -> [(Keyword,Value)] -> Either FunctionError a
+call function args kwargs = case result of
+  Failure err                  -> Left err
+  Success _ (ArgStack (_:_) _) -> Left TooManyArgumentsError
+  Success ret _                -> Right ret
+  where result = runFunction function (ArgStack args kwargs)
 
-requireArg :: Function Value
-requireArg = Function $ \args -> case args of
-  ArgStack (x:xs) -> Success x (ArgStack xs)
-  ArgStack [] -> Failure MissingArgumentError
+requireArg :: Keyword -> Function Value
+requireArg keyword = Function $ \args -> case args of
+  ArgStack (x:xs) kwargs -> Success x (ArgStack xs kwargs)
+  ArgStack [] kwargs -> case lookup keyword kwargs of
+    Just val -> Success val (ArgStack [] kwargs)
+    Nothing -> Failure (MissingArgumentError keyword)
+
+acceptArg :: Keyword -> Value -> Function Value
+acceptArg keyword defaultVal = Function $ \args -> case args of
+  ArgStack (x:xs) kwargs -> Success x (ArgStack xs kwargs)
+  ArgStack [] kwargs -> case lookup keyword kwargs of
+    Just val -> Success val (ArgStack [] kwargs)
+    Nothing -> Success defaultVal (ArgStack [] kwargs)
