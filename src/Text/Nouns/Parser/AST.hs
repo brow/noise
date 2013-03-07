@@ -46,6 +46,9 @@ instance HasSourceRange SourceFile where
 instance HasSourceRange QualifiedIdentifier where
   rangeInSource (QualifiedIdentifier _ r) = r
 
+instance HasSourceRange Value where
+  rangeInSource (Value _ r) = r
+
 instance HasSourceRange Argument where
   rangeInSource (KeywordArgument _ _ r) = r
   rangeInSource (PositionalArgument _ r) = r
