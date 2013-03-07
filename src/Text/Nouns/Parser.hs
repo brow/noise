@@ -35,7 +35,7 @@ keywordArgument :: Parser AST.Argument
 keywordArgument = do
   start <- getPosition
   keyword <- Token.identifier
-  Token.symbol "="
+  _ <- Token.symbol "="
   val <- value
   end <- getPosition
   return $ AST.KeywordArgument keyword val (start, end)
