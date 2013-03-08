@@ -2,6 +2,8 @@ module Text.Nouns.Parser
 ( parse
 , parseFile
 , ParseError
+, sourceFile
+, functionCall
 ) where
 
 import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof)
