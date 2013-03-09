@@ -22,8 +22,11 @@ compile (AST.SourceFile funcCalls _) = do
   return $ D.Document elems
 
 compileArgument :: AST.Argument -> Either F.Value (String, F.Value)
-compileArgument (AST.PositionalArgument (AST.Value val _) _) = Left val
-compileArgument (AST.KeywordArgument keyword (AST.Value val _) _) = Right (keyword, val)
+compileArgument (AST.PositionalArgument value _) = Left (compileValue value)
+compileArgument (AST.KeywordArgument keyword value _) = Right (keyword, compileValue value)
+
+compileValue :: AST.Value -> F.Value
+compileValue (AST.Value x _) = F.LengthValue x
 
 runBuiltin :: AST.FunctionCall -> Either CompileError D.Element
 runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers _) args srcRange) =

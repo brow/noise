@@ -1,19 +1,22 @@
 module Text.Nouns.Compiler.Function
 ( Function
+, Value(..)
 , FunctionError(..)
-, Value
 , requireArg
 , acceptArg
 , call
 ) where
 
+import qualified Text.Nouns.Compiler.Document as D
+
 type Keyword = String
 
-type Value = Double
+data Value = LengthValue D.Length
 
 data ArgStack = ArgStack [Value] [(Keyword,Value)]
 
 data FunctionError = MissingArgumentError Keyword
+                   | ArgumentTypeError Keyword
                    | TooManyArgumentsError
                    deriving (Show, Eq)
 
@@ -38,16 +41,21 @@ call function args kwargs = case result of
   where result = runFunction function (ArgStack args kwargs)
 
 class FromValue a where
-  fromValue :: Value -> a
+  fromValue :: Value -> Maybe a
 
 instance FromValue Double where
-  fromValue = id
+  fromValue (LengthValue x) = Just x
+  fromValue _ = Nothing
 
 getArg :: (FromValue a) => Keyword -> Maybe a -> Function a
 getArg keyword maybeDefault = Function $ \args -> case args of
-  ArgStack (x:xs) kwargs -> Success (fromValue x) (ArgStack xs kwargs)
+  ArgStack (value:xs) kwargs -> case fromValue value of
+    Just x -> Success x (ArgStack xs kwargs)
+    Nothing -> Failure (ArgumentTypeError keyword)
   ArgStack [] kwargs -> case lookup keyword kwargs of
-    Just value -> Success (fromValue value) (ArgStack [] kwargs)
+    Just value -> case fromValue value of
+      Just x -> Success x (ArgStack [] kwargs)
+      Nothing -> Failure (ArgumentTypeError keyword)
     Nothing -> case maybeDefault of
       Just default' -> Success default' (ArgStack [] kwargs)
       Nothing -> Failure (MissingArgumentError keyword)
