@@ -7,11 +7,9 @@ module Text.Nouns.Compiler.Function
 , call
 ) where
 
-import qualified Text.Nouns.Compiler.Document as D
-
 type Keyword = String
 
-data Value = LengthValue D.Length
+data Value = FloatValue Double
 
 data ArgStack = ArgStack [Value] [(Keyword,Value)]
 
@@ -44,7 +42,7 @@ class FromValue a where
   fromValue :: Value -> Maybe a
 
 instance FromValue Double where
-  fromValue (LengthValue x) = Just x
+  fromValue (FloatValue x) = Just x
   fromValue _ = Nothing
 
 getArg :: (FromValue a) => Keyword -> Maybe a -> Function a
