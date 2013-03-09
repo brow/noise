@@ -1,6 +1,7 @@
 module Text.Nouns.Parser.Token
 ( identifier
 , number
+, hexRGB
 , whiteSpace
 , parens
 , commaSeparated
@@ -24,6 +25,11 @@ integer = T.integer tokenParser
 
 number :: Parser Double
 number = lexeme (try float <|> fmap fromInteger integer)
+
+hexRGB :: Parser String
+hexRGB = lexeme $ do
+  char '#'
+  count 6 hexDigit
 
 whiteSpace :: Parser ()
 whiteSpace = T.whiteSpace tokenParser

@@ -24,12 +24,23 @@ qualifiedIdentifier = do
   end <- getPosition
   return $ AST.QualifiedIdentifier components (start, end)
 
-value :: Parser AST.Value
-value = do
+
+floatValue :: Parser AST.Value
+floatValue = do
   start <- getPosition
-  number <- Token.number
+  float <- Token.number
   end <- getPosition
-  return $ AST.Value number (start, end)
+  return $ AST.FloatValue float (start, end)
+
+hexRGBValue :: Parser AST.Value
+hexRGBValue = do
+  start <- getPosition
+  hexString <- Token.hexRGB
+  end <- getPosition
+  return $ AST.HexRGBValue hexString (start, end)
+
+value :: Parser AST.Value
+value = try hexRGBValue <|> floatValue
 
 keywordArgument :: Parser AST.Argument
 keywordArgument = do

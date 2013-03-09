@@ -24,7 +24,8 @@ data QualifiedIdentifier = QualifiedIdentifier [Identifier] SourceRange deriving
 
 type Identifier = String
 
-data Value = Value Double SourceRange deriving (Show, Eq)
+data Value = FloatValue Double SourceRange
+           | HexRGBValue String SourceRange deriving (Show, Eq)
 
 data Argument = KeywordArgument Identifier Value SourceRange
               | PositionalArgument Value SourceRange
@@ -47,7 +48,8 @@ instance HasSourceRange QualifiedIdentifier where
   rangeInSource (QualifiedIdentifier _ r) = r
 
 instance HasSourceRange Value where
-  rangeInSource (Value _ r) = r
+  rangeInSource (FloatValue _ r) = r
+  rangeInSource (HexRGBValue _ r) = r
 
 instance HasSourceRange Argument where
   rangeInSource (KeywordArgument _ _ r) = r

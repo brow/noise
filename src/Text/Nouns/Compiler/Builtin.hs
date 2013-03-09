@@ -10,11 +10,13 @@ rectangle = do
   width <- requireArg "width"
   height <- requireArg "height"
   radius <- acceptArg "radius" 0
-  return $ D.Rectangle x y width height radius
+  fill <- acceptArg "fill" D.black
+  return $ D.Rectangle x y width height radius fill
 
 circle :: Function D.Element
 circle = do
   cx <- requireArg "cx"
   cy <- requireArg "cy"
   r <- requireArg "r"
-  return $ D.Circle cx cy r
+  fill <- acceptArg "fill" D.black
+  return $ D.Circle cx cy r fill

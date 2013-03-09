@@ -26,7 +26,8 @@ compileArgument (AST.PositionalArgument value _) = Left (compileValue value)
 compileArgument (AST.KeywordArgument keyword value _) = Right (keyword, compileValue value)
 
 compileValue :: AST.Value -> F.Value
-compileValue (AST.Value x _) = F.FloatValue x
+compileValue (AST.FloatValue x _) = F.FloatValue x
+compileValue (AST.HexRGBValue x _) = F.RGBValue x
 
 runBuiltin :: AST.FunctionCall -> Either CompileError D.Element
 runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers _) args srcRange) =

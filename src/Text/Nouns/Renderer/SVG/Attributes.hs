@@ -2,28 +2,32 @@ module Text.Nouns.Renderer.SVG.Attributes where
 
 import Text.Blaze.Svg11.Attributes as SVG
 import Text.Blaze.Internal (Attribute, stringValue)
-import Text.Nouns.Compiler.Document (Coordinate, Length)
+import qualified Text.Nouns.Compiler.Document as D
 
-x :: Coordinate -> Attribute
+x :: D.Coordinate -> Attribute
 x = SVG.x . stringValue . show
 
-y :: Coordinate -> Attribute
+y :: D.Coordinate -> Attribute
 y = SVG.y . stringValue . show
 
-width :: Length -> Attribute
+width :: D.Length -> Attribute
 width = SVG.width . stringValue . show
 
-height :: Length -> Attribute
+height :: D.Length -> Attribute
 height = SVG.height . stringValue . show
 
-cx :: Coordinate -> Attribute
+cx :: D.Coordinate -> Attribute
 cx = SVG.cx . stringValue . show
 
-cy :: Coordinate -> Attribute
+cy :: D.Coordinate -> Attribute
 cy = SVG.cy . stringValue . show
 
-r :: Length -> Attribute
+r :: D.Length -> Attribute
 r = SVG.r . stringValue . show
 
-rx :: Coordinate -> Attribute
+rx :: D.Coordinate -> Attribute
 rx = SVG.rx . stringValue . show
+
+fill :: D.Color -> Attribute
+fill = SVG.fill . stringValue . ('#' :) . D.hexString
+

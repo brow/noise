@@ -15,7 +15,7 @@ assertParseFnCall str expected = case Parser.parse str of
   Left err -> assertFailure $ "parse failed: " ++ show err
 
 arg :: Double -> (Int, Int) -> AST.Argument
-arg val (loc,len) = AST.PositionalArgument (AST.Value val argRange) argRange
+arg val (loc,len) = AST.PositionalArgument (AST.FloatValue val argRange) argRange
   where argRange = AST.oneLineRange "" loc len
 
 range :: Int -> Int -> AST.SourceRange
@@ -39,10 +39,18 @@ test_function_qualified =
       ]
       (range 1 22))
 
+test_function_color_arg =
+  assertParseFnCall
+    "fill(#12aC3b)"
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["fill"] (range 1 4))
+      [AST.PositionalArgument (AST.HexRGBValue "12aC3b" (range 6 7)) (range 6 7)]
+      (range 1 13))
+
 test_function_keyword_arg =
   assertParseFnCall
     "fn(foo=123)"
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["fn"] (range 1 2))
-      [AST.KeywordArgument "foo" (AST.Value 123 (range 8 3)) (range 4 7)]
+      [AST.KeywordArgument "foo" (AST.FloatValue 123 (range 8 3)) (range 4 7)]
       (range 1 11))
