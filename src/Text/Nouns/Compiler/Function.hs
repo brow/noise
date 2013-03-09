@@ -37,16 +37,23 @@ call function args kwargs = case result of
   Success ret _                -> Right ret
   where result = runFunction function (ArgStack args kwargs)
 
-requireArg :: Keyword -> Function Value
-requireArg keyword = Function $ \args -> case args of
-  ArgStack (x:xs) kwargs -> Success x (ArgStack xs kwargs)
-  ArgStack [] kwargs -> case lookup keyword kwargs of
-    Just val -> Success val (ArgStack [] kwargs)
-    Nothing -> Failure (MissingArgumentError keyword)
+class FromValue a where
+  fromValue :: Value -> a
 
-acceptArg :: Keyword -> Value -> Function Value
-acceptArg keyword defaultVal = Function $ \args -> case args of
-  ArgStack (x:xs) kwargs -> Success x (ArgStack xs kwargs)
+instance FromValue Double where
+  fromValue = id
+
+getArg :: (FromValue a) => Keyword -> Maybe a -> Function a
+getArg keyword maybeDefault = Function $ \args -> case args of
+  ArgStack (x:xs) kwargs -> Success (fromValue x) (ArgStack xs kwargs)
   ArgStack [] kwargs -> case lookup keyword kwargs of
-    Just val -> Success val (ArgStack [] kwargs)
-    Nothing -> Success defaultVal (ArgStack [] kwargs)
+    Just value -> Success (fromValue value) (ArgStack [] kwargs)
+    Nothing -> case maybeDefault of
+      Just default' -> Success default' (ArgStack [] kwargs)
+      Nothing -> Failure (MissingArgumentError keyword)
+
+requireArg :: (FromValue a) => Keyword -> Function a
+requireArg keyword = getArg keyword Nothing
+
+acceptArg :: (FromValue a) => Keyword -> a -> Function a
+acceptArg keyword default' = getArg keyword (Just default')
