@@ -26,6 +26,7 @@ type Identifier = String
 
 data Expression = FloatLiteral Double SourceRange
                 | HexRGBLiteral String SourceRange
+                | FunctionCallExp FunctionCall
                 deriving (Show, Eq)
 
 data Argument = KeywordArgument Identifier Expression SourceRange
@@ -51,6 +52,7 @@ instance HasSourceRange QualifiedIdentifier where
 instance HasSourceRange Expression where
   rangeInSource (FloatLiteral _ r) = r
   rangeInSource (HexRGBLiteral _ r) = r
+  rangeInSource (FunctionCallExp fnCall) = rangeInSource fnCall
 
 instance HasSourceRange Argument where
   rangeInSource (KeywordArgument _ _ r) = r

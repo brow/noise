@@ -54,3 +54,17 @@ test_function_keyword_arg =
       (AST.QualifiedIdentifier ["fn"] (range 1 2))
       [AST.KeywordArgument "foo" (AST.FloatLiteral 123 (range 8 3)) (range 4 7)]
       (range 1 11))
+
+test_function_fn_arg =
+  assertParseFnCall
+    "foo(bar())"
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["foo"] (range 1 3))
+      [AST.PositionalArgument
+        (AST.FunctionCallExp
+          (AST.FunctionCall
+            (AST.QualifiedIdentifier ["bar"] (range 5 3))
+            []
+            (range 5 5)))]
+      (range 1 10))
+

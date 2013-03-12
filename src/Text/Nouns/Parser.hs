@@ -26,22 +26,27 @@ qualifiedIdentifier = do
   return $ AST.QualifiedIdentifier components (start, end)
 
 
-floatValue :: Parser AST.Expression
-floatValue = do
+floatLiteral :: Parser AST.Expression
+floatLiteral = do
   start <- getPosition
   float <- Token.number
   end <- getPosition
   return $ AST.FloatLiteral float (start, end)
 
-hexRGBValue :: Parser AST.Expression
-hexRGBValue = do
+hexRGBLiteral :: Parser AST.Expression
+hexRGBLiteral = do
   start <- getPosition
   hexString <- Token.hexRGB
   end <- getPosition
   return $ AST.HexRGBLiteral hexString (start, end)
 
+functionCallExp :: Parser AST.Expression
+functionCallExp = liftM AST.FunctionCallExp functionCall
+
 value :: Parser AST.Expression
-value = try hexRGBValue <|> floatValue
+value = try hexRGBLiteral <|>
+        try floatLiteral <|>
+        functionCallExp
 
 keywordArgument :: Parser AST.Argument
 keywordArgument = do
