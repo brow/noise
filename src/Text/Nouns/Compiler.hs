@@ -17,26 +17,36 @@ data CompileError = FunctionCallError AST.SourceRange FunctionError
                   deriving (Show, Eq)
 
 compile :: AST.SourceFile -> Either CompileError D.Document
-compile (AST.SourceFile funcCalls _) = do
-  elems <- mapM runBuiltin funcCalls
+compile (AST.SourceFile fnCalls _) = do
+  elems <- mapM compileFunctionCall fnCalls
   return $ D.Document elems
 
-compileArgument :: AST.Argument -> Either F.Value (String, F.Value)
-compileArgument (AST.PositionalArgument value) = Left (compileValue value)
-compileArgument (AST.KeywordArgument keyword value _) = Right (keyword, compileValue value)
+compileFunctionCall :: AST.FunctionCall -> Either CompileError D.Element
+compileFunctionCall (AST.FunctionCall name args srcRange) = do
+  function <- compileFunctionName name
+  (posArgs, kwArgs) <- compileArguments args
+  case F.call function posArgs kwArgs of
+    Left callError -> Left $ FunctionCallError srcRange callError
+    Right element -> Right element
 
-compileValue :: AST.Expression -> F.Value
-compileValue (AST.FloatLiteral x _) = F.FloatValue x
-compileValue (AST.HexRGBLiteral x _) = F.RGBValue x
+compileFunctionName :: AST.QualifiedIdentifier -> Either CompileError (F.Function D.Element)
+compileFunctionName (AST.QualifiedIdentifier components srcRange) =
+  case components of
+    ["shape", "rectangle"] -> return B.rectangle
+    ["shape", "circle"]    -> return B.circle
+    _ -> Left $ UndefinedFunctionError srcRange
 
-runBuiltin :: AST.FunctionCall -> Either CompileError D.Element
-runBuiltin (AST.FunctionCall (AST.QualifiedIdentifier identifiers _) args srcRange) =
-  case identifiers of
-    ["shape", "rectangle"] -> use B.rectangle
-    ["shape", "circle"]    -> use B.circle
-    _ -> Left (UndefinedFunctionError srcRange)
-  where use function = case F.call function posArgs kwArgs of
-          Left callError -> Left (FunctionCallError srcRange callError)
-          Right element -> Right element
-        (posArgs, kwArgs) = partitionEithers $ map compileArgument args
+compileArguments :: [AST.Argument] -> Either CompileError ([F.Value], [(String, F.Value)])
+compileArguments = fmap partitionEithers . mapM compileArgument
 
+compileArgument :: AST.Argument -> Either CompileError (Either F.Value (String, F.Value))
+compileArgument (AST.PositionalArgument valueExp) = do
+  value <- compileExp valueExp
+  return $ Left value
+compileArgument (AST.KeywordArgument keyword valueExp _) = do
+  value <- compileExp valueExp
+  return $ Right (keyword, value)
+
+compileExp :: AST.Expression -> Either CompileError F.Value
+compileExp (AST.FloatLiteral x _) = return (F.FloatValue x)
+compileExp (AST.HexRGBLiteral x _) = return (F.RGBValue x)

@@ -4,7 +4,6 @@ module Text.Nouns.Parser
 , ParseError
 ) where
 
-import Control.Monad (liftM)
 import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof)
 import Text.Parsec.Prim (getPosition, try, (<|>))
 import qualified Text.Parsec.Prim
@@ -41,7 +40,7 @@ hexRGBLiteral = do
   return $ AST.HexRGBLiteral hexString (start, end)
 
 functionCallExp :: Parser AST.Expression
-functionCallExp = liftM AST.FunctionCallExp functionCall
+functionCallExp = fmap AST.FunctionCallExp functionCall
 
 value :: Parser AST.Expression
 value = try hexRGBLiteral <|>
@@ -58,7 +57,7 @@ keywordArgument = do
   return $ AST.KeywordArgument keyword val (start, end)
 
 positionalArgument :: Parser AST.Argument
-positionalArgument = liftM AST.PositionalArgument value
+positionalArgument = fmap AST.PositionalArgument value
 
 argument :: Parser AST.Argument
 argument = try keywordArgument <|> positionalArgument

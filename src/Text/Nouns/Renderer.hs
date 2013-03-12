@@ -21,9 +21,11 @@ instance Renderable D.Element where
     ! At.width w
     ! At.height h
     ! At.rx radius
-    ! At.fill fill
+    ! case fill of
+      D.ColorPaint color -> At.fill color
   renderToSvg (D.Circle cx cy r fill) = SVG.circle
     ! At.cx cx
     ! At.cy cy
     ! At.r r
-    ! At.fill fill
+    ! case fill of
+      D.ColorPaint color -> At.fill color

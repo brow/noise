@@ -48,8 +48,8 @@ instance FromValue Double where
   fromValue (FloatValue x) = Just x
   fromValue _ = Nothing
 
-instance FromValue D.Color where
-  fromValue (RGBValue x) = Just (D.Color x)
+instance FromValue D.Paint where
+  fromValue (RGBValue x) = Just $ D.ColorPaint $ D.Color x
   fromValue _ = Nothing
 
 getArg :: (FromValue a) => Keyword -> Maybe a -> Function a
