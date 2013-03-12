@@ -9,7 +9,7 @@ module Text.Nouns.Parser.AST
 , QualifiedIdentifier(..)
 , Identifier
 , Argument(..)
-, Value(..)
+, Expression(..)
 ) where
 
 import qualified Text.Parsec.Pos as Parsec
@@ -24,11 +24,12 @@ data QualifiedIdentifier = QualifiedIdentifier [Identifier] SourceRange deriving
 
 type Identifier = String
 
-data Value = FloatValue Double SourceRange
-           | HexRGBValue String SourceRange deriving (Show, Eq)
+data Expression = FloatLiteral Double SourceRange
+                | HexRGBLiteral String SourceRange
+                deriving (Show, Eq)
 
-data Argument = KeywordArgument Identifier Value SourceRange
-              | PositionalArgument Value SourceRange
+data Argument = KeywordArgument Identifier Expression SourceRange
+              | PositionalArgument Expression SourceRange
               deriving (Show, Eq)
 
 oneLineRange :: Parsec.SourceName -> Int -> Int -> SourceRange
@@ -47,9 +48,9 @@ instance HasSourceRange SourceFile where
 instance HasSourceRange QualifiedIdentifier where
   rangeInSource (QualifiedIdentifier _ r) = r
 
-instance HasSourceRange Value where
-  rangeInSource (FloatValue _ r) = r
-  rangeInSource (HexRGBValue _ r) = r
+instance HasSourceRange Expression where
+  rangeInSource (FloatLiteral _ r) = r
+  rangeInSource (HexRGBLiteral _ r) = r
 
 instance HasSourceRange Argument where
   rangeInSource (KeywordArgument _ _ r) = r

@@ -22,13 +22,13 @@ assertFnCallFails err fnCall =
   assertEqual (Left err) $ Compiler.compile $ AST.SourceFile [fnCall] AST.zeroRange
 
 class ToValue a where
-  toValue :: a -> AST.Value
+  toValue :: a -> AST.Expression
 
 instance ToValue Int where
-  toValue x = AST.FloatValue (fromIntegral x) AST.zeroRange
+  toValue x = AST.FloatLiteral (fromIntegral x) AST.zeroRange
 
 instance ToValue String where
-  toValue s = AST.HexRGBValue s AST.zeroRange
+  toValue s = AST.HexRGBLiteral s AST.zeroRange
 
 arg :: (ToValue a) => a -> AST.Argument
 arg x = AST.PositionalArgument (toValue x) AST.zeroRange
@@ -38,7 +38,7 @@ args = map arg
 
 kwArg :: String -> Double -> AST.Argument
 kwArg key x = AST.KeywordArgument key
-  (AST.FloatValue x AST.zeroRange)
+  (AST.FloatLiteral x AST.zeroRange)
   AST.zeroRange
 
 test_compile_undefined =

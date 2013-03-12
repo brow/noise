@@ -25,21 +25,21 @@ qualifiedIdentifier = do
   return $ AST.QualifiedIdentifier components (start, end)
 
 
-floatValue :: Parser AST.Value
+floatValue :: Parser AST.Expression
 floatValue = do
   start <- getPosition
   float <- Token.number
   end <- getPosition
-  return $ AST.FloatValue float (start, end)
+  return $ AST.FloatLiteral float (start, end)
 
-hexRGBValue :: Parser AST.Value
+hexRGBValue :: Parser AST.Expression
 hexRGBValue = do
   start <- getPosition
   hexString <- Token.hexRGB
   end <- getPosition
-  return $ AST.HexRGBValue hexString (start, end)
+  return $ AST.HexRGBLiteral hexString (start, end)
 
-value :: Parser AST.Value
+value :: Parser AST.Expression
 value = try hexRGBValue <|> floatValue
 
 keywordArgument :: Parser AST.Argument
