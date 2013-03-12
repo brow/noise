@@ -39,9 +39,8 @@ compileFunctionCall (AST.FunctionCall name args srcRange) = do
 
 compileFunctionName :: AST.QualifiedIdentifier -> Either CompileError (F.Function F.Value)
 compileFunctionName (AST.QualifiedIdentifier components srcRange) =
-  case components of
-    ["shape", "rectangle"] -> return Builtin.rectangle
-    ["shape", "circle"]    -> return Builtin.circle
+  case Builtin.functionWithName components of
+    Just function -> Right function
     _ -> Left $ UndefinedFunctionError srcRange
 
 compileArguments :: [AST.Argument] -> Either CompileError ([F.Value], [(String, F.Value)])

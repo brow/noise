@@ -53,6 +53,14 @@ test_compile_undefined =
       []
       AST.zeroRange)
 
+test_compile_statement_type_error =
+  assertFnCallFails
+    (Compiler.StatementReturnTypeError AST.zeroRange)
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["color", "red"] AST.zeroRange)
+      []
+      AST.zeroRange)
+
 test_compile_missing_args =
   assertFnCallFails
     (Compiler.FunctionCallError AST.zeroRange (Compiler.MissingArgumentError "x"))
