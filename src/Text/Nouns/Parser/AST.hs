@@ -29,7 +29,7 @@ data Expression = FloatLiteral Double SourceRange
                 deriving (Show, Eq)
 
 data Argument = KeywordArgument Identifier Expression SourceRange
-              | PositionalArgument Expression SourceRange
+              | PositionalArgument Expression
               deriving (Show, Eq)
 
 oneLineRange :: Parsec.SourceName -> Int -> Int -> SourceRange
@@ -54,7 +54,7 @@ instance HasSourceRange Expression where
 
 instance HasSourceRange Argument where
   rangeInSource (KeywordArgument _ _ r) = r
-  rangeInSource (PositionalArgument _ r) = r
+  rangeInSource (PositionalArgument expr) = rangeInSource expr
 
 instance HasSourceRange FunctionCall where
   rangeInSource (FunctionCall _ _ r) = r

@@ -31,7 +31,7 @@ instance ToValue String where
   toValue s = AST.HexRGBLiteral s AST.zeroRange
 
 arg :: (ToValue a) => a -> AST.Argument
-arg x = AST.PositionalArgument (toValue x) AST.zeroRange
+arg x = AST.PositionalArgument $ toValue x
 
 args :: (ToValue a) => [a] -> [AST.Argument]
 args = map arg

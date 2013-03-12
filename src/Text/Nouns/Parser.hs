@@ -4,6 +4,7 @@ module Text.Nouns.Parser
 , ParseError
 ) where
 
+import Control.Monad (liftM)
 import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof)
 import Text.Parsec.Prim (getPosition, try, (<|>))
 import qualified Text.Parsec.Prim
@@ -52,11 +53,7 @@ keywordArgument = do
   return $ AST.KeywordArgument keyword val (start, end)
 
 positionalArgument :: Parser AST.Argument
-positionalArgument = do
-  start <- getPosition
-  val <- value
-  end <- getPosition
-  return $ AST.PositionalArgument val (start, end)
+positionalArgument = liftM AST.PositionalArgument value
 
 argument :: Parser AST.Argument
 argument = try keywordArgument <|> positionalArgument

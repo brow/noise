@@ -22,7 +22,7 @@ compile (AST.SourceFile funcCalls _) = do
   return $ D.Document elems
 
 compileArgument :: AST.Argument -> Either F.Value (String, F.Value)
-compileArgument (AST.PositionalArgument value _) = Left (compileValue value)
+compileArgument (AST.PositionalArgument value) = Left (compileValue value)
 compileArgument (AST.KeywordArgument keyword value _) = Right (keyword, compileValue value)
 
 compileValue :: AST.Expression -> F.Value
