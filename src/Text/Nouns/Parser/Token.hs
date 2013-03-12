@@ -28,7 +28,7 @@ number = lexeme (try float <|> fmap fromInteger integer)
 
 hexRGB :: Parser String
 hexRGB = lexeme $ do
-  char '#'
+  _ <- char '#'
   count 6 hexDigit
 
 whiteSpace :: Parser ()
