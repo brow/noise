@@ -13,6 +13,7 @@ type Keyword = String
 
 data Value = FloatValue Double
            | RGBValue String
+           | ElementValue D.Element
 
 data ArgStack = ArgStack [Value] [(Keyword,Value)]
 

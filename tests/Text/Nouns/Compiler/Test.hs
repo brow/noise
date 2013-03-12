@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -F -pgmF htfpp -fno-warn-missing-signatures #-}
-{-# OPTIONS_GHC -XTypeSynonymInstances -XFlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
 module Text.Nouns.Compiler.Test where
 
@@ -11,15 +11,19 @@ import qualified Text.Nouns.Parser.AST as AST
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
+sourceFileWithFnCall :: AST.FunctionCall -> AST.SourceFile
+sourceFileWithFnCall fnCall =
+  AST.SourceFile [AST.FunctionCallStatement fnCall] AST.zeroRange
+
 assertFnCallCompilesTo :: D.Element -> AST.FunctionCall -> Assertion
 assertFnCallCompilesTo element fnCall =
   assertEqual
     (Right $ D.Document [element])
-    (Compiler.compile $ AST.SourceFile [fnCall] AST.zeroRange)
+    (Compiler.compile $ sourceFileWithFnCall fnCall)
 
 assertFnCallFails :: Compiler.CompileError -> AST.FunctionCall -> Assertion
 assertFnCallFails err fnCall =
-  assertEqual (Left err) $ Compiler.compile $ AST.SourceFile [fnCall] AST.zeroRange
+  assertEqual (Left err) $ Compiler.compile (sourceFileWithFnCall fnCall)
 
 class ToValue a where
   toValue :: a -> AST.Expression

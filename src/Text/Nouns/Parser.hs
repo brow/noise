@@ -42,22 +42,25 @@ hexRGBLiteral = do
 functionCallExp :: Parser AST.Expression
 functionCallExp = fmap AST.FunctionCallExp functionCall
 
-value :: Parser AST.Expression
-value = try hexRGBLiteral <|>
-        try floatLiteral <|>
-        functionCallExp
+expression :: Parser AST.Expression
+expression = try hexRGBLiteral <|>
+             try floatLiteral <|>
+             functionCallExp
+
+statement :: Parser AST.Statement
+statement = fmap AST.FunctionCallStatement functionCall
 
 keywordArgument :: Parser AST.Argument
 keywordArgument = do
   start <- getPosition
   keyword <- Token.identifier
   _ <- Token.symbol "="
-  val <- value
+  val <- expression
   end <- getPosition
   return $ AST.KeywordArgument keyword val (start, end)
 
 positionalArgument :: Parser AST.Argument
-positionalArgument = fmap AST.PositionalArgument value
+positionalArgument = fmap AST.PositionalArgument expression
 
 argument :: Parser AST.Argument
 argument = try keywordArgument <|> positionalArgument
@@ -74,6 +77,6 @@ sourceFile :: Parser AST.SourceFile
 sourceFile = do
   start <- getPosition
   Token.whiteSpace
-  calls <- many functionCall
+  statements <- many statement
   end <- getPosition
-  eof >> return (AST.SourceFile calls (start, end))
+  eof >> return (AST.SourceFile statements (start, end))

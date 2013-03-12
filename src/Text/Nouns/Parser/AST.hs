@@ -10,19 +10,22 @@ module Text.Nouns.Parser.AST
 , Identifier
 , Argument(..)
 , Expression(..)
+, Statement(..)
 ) where
 
 import qualified Text.Parsec.Pos as Parsec
 
 type SourceRange = (Parsec.SourcePos, Parsec.SourcePos)
 
-data SourceFile = SourceFile [FunctionCall] SourceRange deriving (Show, Eq)
+data SourceFile = SourceFile [Statement] SourceRange deriving (Show, Eq)
 
 data FunctionCall = FunctionCall QualifiedIdentifier [Argument] SourceRange deriving (Show, Eq)
 
 data QualifiedIdentifier = QualifiedIdentifier [Identifier] SourceRange deriving (Show, Eq)
 
 type Identifier = String
+
+data Statement = FunctionCallStatement FunctionCall deriving (Show, Eq)
 
 data Expression = FloatLiteral Double SourceRange
                 | HexRGBLiteral String SourceRange
@@ -60,3 +63,6 @@ instance HasSourceRange Argument where
 
 instance HasSourceRange FunctionCall where
   rangeInSource (FunctionCall _ _ r) = r
+
+instance HasSourceRange Statement where
+  rangeInSource (FunctionCallStatement fnCall) = rangeInSource fnCall

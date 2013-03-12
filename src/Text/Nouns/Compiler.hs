@@ -9,31 +9,39 @@ import Data.Either (partitionEithers)
 import qualified Text.Nouns.Parser.AST as AST
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
-import qualified Text.Nouns.Compiler.Builtin as B
+import qualified Text.Nouns.Compiler.Builtin as Builtin
 import Text.Nouns.Compiler.Function (FunctionError(..))
 
 data CompileError = FunctionCallError AST.SourceRange FunctionError
                   | UndefinedFunctionError AST.SourceRange
+                  | StatementReturnTypeError AST.SourceRange
                   deriving (Show, Eq)
 
 compile :: AST.SourceFile -> Either CompileError D.Document
 compile (AST.SourceFile fnCalls _) = do
-  elems <- mapM compileFunctionCall fnCalls
+  elems <- mapM compileStatement fnCalls
   return $ D.Document elems
 
-compileFunctionCall :: AST.FunctionCall -> Either CompileError D.Element
+compileStatement :: AST.Statement -> Either CompileError D.Element
+compileStatement (AST.FunctionCallStatement fnCall) = do
+  value <- compileFunctionCall fnCall
+  case value of
+    F.ElementValue element -> return element
+    _ -> Left $ StatementReturnTypeError (AST.rangeInSource fnCall)
+
+compileFunctionCall :: AST.FunctionCall -> Either CompileError F.Value
 compileFunctionCall (AST.FunctionCall name args srcRange) = do
   function <- compileFunctionName name
   (posArgs, kwArgs) <- compileArguments args
   case F.call function posArgs kwArgs of
     Left callError -> Left $ FunctionCallError srcRange callError
-    Right element -> Right element
+    Right value -> Right value
 
-compileFunctionName :: AST.QualifiedIdentifier -> Either CompileError (F.Function D.Element)
+compileFunctionName :: AST.QualifiedIdentifier -> Either CompileError (F.Function F.Value)
 compileFunctionName (AST.QualifiedIdentifier components srcRange) =
   case components of
-    ["shape", "rectangle"] -> return B.rectangle
-    ["shape", "circle"]    -> return B.circle
+    ["shape", "rectangle"] -> return Builtin.rectangle
+    ["shape", "circle"]    -> return Builtin.circle
     _ -> Left $ UndefinedFunctionError srcRange
 
 compileArguments :: [AST.Argument] -> Either CompileError ([F.Value], [(String, F.Value)])
