@@ -2,6 +2,7 @@ module Text.Nouns.Compiler.Builtin
 ( functionWithName
 ) where
 
+import Control.Applicative
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
 import Text.Nouns.Compiler.Function (Function, requireArg, acceptArg)
@@ -20,22 +21,20 @@ functionWithName name = case name of
   _               -> Nothing
 
 rectangle :: Function F.Value
-rectangle = do
-  x <- requireArg "x"
-  y <- requireArg "y"
-  width <- requireArg "width"
-  height <- requireArg "height"
-  radius <- acceptArg "radius" 0
-  fill <- acceptArg "fill" D.black
-  return $ F.ElementValue $ D.Rectangle x y width height radius fill
+rectangle = fmap F.ElementValue $ D.Rectangle
+  <$> requireArg "x"
+  <*> requireArg "y"
+  <*> requireArg "width"
+  <*> requireArg "height"
+  <*> acceptArg "radius" 0
+  <*> acceptArg "fill" D.black
 
 circle :: Function F.Value
-circle = do
-  cx <- requireArg "cx"
-  cy <- requireArg "cy"
-  r <- requireArg "r"
-  fill <- acceptArg "fill" D.black
-  return $ F.ElementValue $ D.Circle cx cy r fill
+circle = fmap F.ElementValue $ D.Circle
+  <$> requireArg "cx"
+  <*> requireArg "cy"
+  <*> requireArg "r"
+  <*> acceptArg "fill" D.black
 
 color :: String -> Function F.Value
 color = return . F.RGBValue

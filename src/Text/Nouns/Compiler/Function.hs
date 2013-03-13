@@ -7,6 +7,8 @@ module Text.Nouns.Compiler.Function
 , call
 ) where
 
+import Control.Applicative
+import Control.Monad
 import qualified Text.Nouns.Compiler.Document as D
 
 type Keyword = String
@@ -25,6 +27,13 @@ data FunctionError = MissingArgumentError Keyword
 data Result a = Success a ArgStack | Failure FunctionError
 
 data Function a = Function { runFunction :: ArgStack -> Result a }
+
+instance Functor Function where
+  fmap = liftM
+
+instance Applicative Function where
+  pure = return
+  (<*>) = ap
 
 instance Monad Function where
   return x = Function $ \args -> Success x args
