@@ -17,19 +17,21 @@ data CompileError = FunctionCallError AST.SourceRange FunctionError
                   | StatementReturnTypeError AST.SourceRange
                   deriving (Show, Eq)
 
-compile :: AST.SourceFile -> Either CompileError D.Document
+type Compiled a = Either CompileError a
+
+compile :: AST.SourceFile -> Compiled D.Document
 compile (AST.SourceFile fnCalls _) = do
   elems <- mapM compileStatement fnCalls
   return $ D.Document elems
 
-compileStatement :: AST.Statement -> Either CompileError D.Element
+compileStatement :: AST.Statement -> Compiled D.Element
 compileStatement (AST.FunctionCallStatement fnCall) = do
   value <- compileFunctionCall fnCall
   case value of
     F.ElementValue element -> return element
     _ -> Left $ StatementReturnTypeError (AST.rangeInSource fnCall)
 
-compileFunctionCall :: AST.FunctionCall -> Either CompileError F.Value
+compileFunctionCall :: AST.FunctionCall -> Compiled F.Value
 compileFunctionCall (AST.FunctionCall name args srcRange) = do
   function <- compileFunctionName name
   (posArgs, kwArgs) <- compileArguments args
@@ -37,16 +39,16 @@ compileFunctionCall (AST.FunctionCall name args srcRange) = do
     Left callError -> Left $ FunctionCallError srcRange callError
     Right value -> Right value
 
-compileFunctionName :: AST.QualifiedIdentifier -> Either CompileError (F.Function F.Value)
+compileFunctionName :: AST.QualifiedIdentifier -> Compiled (F.Function F.Value)
 compileFunctionName (AST.QualifiedIdentifier components srcRange) =
   case Builtin.functionWithName components of
     Just function -> Right function
     _ -> Left $ UndefinedFunctionError srcRange
 
-compileArguments :: [AST.Argument] -> Either CompileError ([F.Value], [(String, F.Value)])
+compileArguments :: [AST.Argument] -> Compiled ([F.Value], [(String, F.Value)])
 compileArguments = fmap partitionEithers . mapM compileArgument
 
-compileArgument :: AST.Argument -> Either CompileError (Either F.Value (String, F.Value))
+compileArgument :: AST.Argument -> Compiled (Either F.Value (String, F.Value))
 compileArgument (AST.PositionalArgument valueExp) = do
   value <- compileExp valueExp
   return $ Left value
@@ -54,7 +56,7 @@ compileArgument (AST.KeywordArgument keyword valueExp _) = do
   value <- compileExp valueExp
   return $ Right (keyword, value)
 
-compileExp :: AST.Expression -> Either CompileError F.Value
+compileExp :: AST.Expression -> Compiled F.Value
 compileExp (AST.FloatLiteral x _) = return (F.FloatValue x)
 compileExp (AST.HexRGBLiteral x _) = return (F.RGBValue x)
 compileExp (AST.FunctionCallExp fnCall) = compileFunctionCall fnCall
