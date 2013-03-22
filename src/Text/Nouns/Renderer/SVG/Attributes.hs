@@ -36,3 +36,15 @@ stopColor = SVG.stopColor . stringValue . show
 
 id :: String -> Attribute
 id = SVG.id_ . stringValue
+
+x1 :: D.Number -> Attribute
+x1 = SVG.x1 . stringValue . show
+
+y1 :: D.Number -> Attribute
+y1 = SVG.y1 . stringValue . show
+
+x2 :: D.Number -> Attribute
+x2 = SVG.x2 . stringValue . show
+
+y2 :: D.Number -> Attribute
+y2 = SVG.y2 . stringValue . show

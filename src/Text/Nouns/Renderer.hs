@@ -69,13 +69,17 @@ instance Renderable D.Element where
     ? fillAttr fill
 
 instance Renderable D.Gradient where
-  renderToSvg (D.LinearGradient color0 color1) = SVG.lineargradient $ do
-    SVG.stop
-      ! At.offset 0
-      ! At.stopColor color0
-    SVG.stop
-      ! At.offset 1
-      ! At.stopColor color1
+  renderToSvg (D.LinearGradient angle color0 color1) = SVG.lineargradient
+    ! At.x2 (cos radians)
+    ! At.y2 (sin radians)
+    $ do
+      SVG.stop
+        ! At.offset 0
+        ! At.stopColor color0
+      SVG.stop
+        ! At.offset 1
+        ! At.stopColor color1
+    where radians = angle * pi / 180
 
 strAttr :: (SVG.AttributeValue -> SVG.Attribute) -> String -> InlineAttribute
 strAttr attrFn = InlineAttribute Nothing . attrFn . Blaze.stringValue

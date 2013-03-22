@@ -17,6 +17,8 @@ import qualified Network.URI as URI
 
 type Number = Double
 
+type Angle = Number
+
 type Length = Number
 
 type Coordinate = Length
@@ -35,7 +37,7 @@ newtype Color = Color { hexString :: String } deriving (Eq)
 instance Show Color where
   show color = '#' : hexString color
 
-data Gradient = LinearGradient Color Color deriving (Eq, Show)
+data Gradient = LinearGradient Angle Color Color deriving (Eq, Show)
 
 data Paint = ColorPaint Color
            | GradientPaint Gradient
