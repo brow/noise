@@ -3,7 +3,7 @@
 module Text.Nouns.Renderer (render) where
 
 import           Numeric (showHex)
-import           Data.Monoid (mconcat, (<>))
+import           Data.Monoid
 import           Data.List (foldl')
 import           Data.ByteString (unpack)
 import qualified Crypto.Hash.SHA1 as SHA1
@@ -28,6 +28,11 @@ data InlineSvg = InlineSvg [Svg] Svg
 
 data InlineAttribute = InlineAttribute (Maybe Svg) SVG.Attribute
 
+instance Monoid InlineSvg where
+  mempty = InlineSvg [] mempty
+  mappend (InlineSvg defs svg) (InlineSvg defs' svg') =
+    InlineSvg (defs <> defs') (svg <> svg')
+
 (?) :: InlineSvg -> InlineAttribute -> InlineSvg
 (InlineSvg defs svg) ? (InlineAttribute attrDef attr) = InlineSvg defs' svg'
   where svg' = svg ! attr
@@ -45,7 +50,8 @@ instance Blaze.Attributable InlineSvg where
   (InlineSvg defs main) ! attr = InlineSvg defs (main ! attr)
 
 instance Renderable D.Document where
-  renderToSvg (D.Document elems) = SVG.docTypeSvg $ mconcat $ map renderToSvg elems
+  renderToSvg (D.Document elems) =
+    SVG.docTypeSvg $ uninline $ mconcat $ map renderToInlineSvg elems
 
 instance Renderable D.Element where
   renderToInlineSvg (D.Rectangle x y w h radius fill) = inline SVG.rect
