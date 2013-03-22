@@ -18,6 +18,9 @@ functionWithName name = case name of
     ["green"]     -> Just (color "00ff00")
     ["blue"]      -> Just (color "0000ff")
     _             -> Nothing
+  "gradient" : x -> case x of
+    ["vertical"]  -> Just verticalGradient
+    _             -> Nothing
   _               -> Nothing
 
 rectangle :: Function F.Value
@@ -38,3 +41,8 @@ circle = fmap F.ElementValue $ D.Circle
 
 color :: String -> Function F.Value
 color = return . F.RGBValue
+
+verticalGradient :: Function F.Value
+verticalGradient = fmap F.GradientValue $ D.LinearGradient
+  <$> requireArg "from"
+  <*> requireArg "to"

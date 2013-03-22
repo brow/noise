@@ -16,6 +16,7 @@ type Keyword = String
 data Value = FloatValue Double
            | RGBValue String
            | ElementValue D.Element
+           | GradientValue D.Gradient
 
 data ArgStack = ArgStack [Value] [(Keyword,Value)]
 
@@ -59,7 +60,12 @@ instance FromValue Double where
   fromValue _ = Nothing
 
 instance FromValue D.Paint where
-  fromValue (RGBValue x) = Just $ D.ColorPaint $ D.Color x
+  fromValue (RGBValue x) = Just $ D.ColorPaint (D.Color x)
+  fromValue (GradientValue x) = Just (D.GradientPaint x)
+  fromValue _ = Nothing
+
+instance FromValue D.Color where
+  fromValue (RGBValue x) = Just (D.Color x)
   fromValue _ = Nothing
 
 getArg :: (FromValue a) => Keyword -> Maybe a -> Function a

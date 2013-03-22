@@ -11,16 +11,6 @@ category:            Text
 build-type:          Simple
 cabal-version:       >=1.8
 
-library
-  ghc-options: -Wall
-  hs-source-dirs: src
-  exposed-modules:
-  build-depends:
-    base ==4.5.*,
-    parsec ==3.1.*,
-    blaze-svg ==0.3.*,
-    blaze-markup ==0.5.*
-
 executable nouns
   ghc-options: -Wall
   hs-source-dirs: src
@@ -29,7 +19,10 @@ executable nouns
     base ==4.5.*,
     parsec ==3.1.*,
     blaze-svg ==0.3.*,
-    blaze-markup ==0.5.*
+    blaze-markup ==0.5.*,
+    cryptohash ==0.8.*,
+    bytestring ==0.9.*,
+    network ==2.4.*
 
 test-suite test
   ghc-options: -Wall
@@ -39,6 +32,7 @@ test-suite test
   build-depends:
     base ==4.5.*,
     parsec ==3.1.*,
+    network ==2.4.*,
     HTF ==0.10.*,
     HUnit ==1.2.*,
     QuickCheck ==2.5.*

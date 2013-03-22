@@ -1,7 +1,7 @@
 module Text.Nouns.Renderer.SVG.Attributes where
 
-import Text.Blaze.Svg11.Attributes as SVG
 import Text.Blaze.Internal (Attribute, stringValue)
+import qualified Text.Blaze.Svg11.Attributes as SVG
 import qualified Text.Nouns.Compiler.Document as D
 
 x :: D.Coordinate -> Attribute
@@ -28,6 +28,11 @@ r = SVG.r . stringValue . show
 rx :: D.Coordinate -> Attribute
 rx = SVG.rx . stringValue . show
 
-fill :: D.Color -> Attribute
-fill = SVG.fill . stringValue . ('#' :) . D.hexString
+offset :: D.Number -> Attribute
+offset = SVG.offset . stringValue . show
 
+stopColor :: D.Color -> Attribute
+stopColor = SVG.stopColor . stringValue . show
+
+id :: String -> Attribute
+id = SVG.id_ . stringValue

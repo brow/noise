@@ -1,20 +1,45 @@
 module Text.Nouns.Compiler.Document
-( Coordinate
+( Number
+, Coordinate
 , Length
+, IRI
 , Paint(..)
 , Color(..)
-, black
+, Gradient(..)
 , Document(..)
 , Element(..)
+, black
+, showFuncIRI
+, localIRIForId
 ) where
+
+import qualified Network.URI as URI
+
+type Number = Double
+
+type Length = Number
 
 type Coordinate = Length
 
-type Length = Double
+type IRI = URI.URI
 
-newtype Color = Color { hexString :: String } deriving (Show, Eq)
+showFuncIRI :: IRI -> String
+showFuncIRI iri = "url(" ++ show iri ++ ")"
 
-data Paint = ColorPaint Color deriving (Show, Eq)
+localIRIForId :: String -> IRI
+localIRIForId id' = URI.nullURI { URI.uriFragment = fragment }
+  where fragment = '#' : URI.escapeURIString URI.isUnescapedInURIComponent id'
+
+newtype Color = Color { hexString :: String } deriving (Eq)
+
+instance Show Color where
+  show color = '#' : hexString color
+
+data Gradient = LinearGradient Color Color deriving (Eq, Show)
+
+data Paint = ColorPaint Color
+           | GradientPaint Gradient
+           deriving (Show, Eq)
 
 black :: Paint
 black = ColorPaint $ Color "000000"

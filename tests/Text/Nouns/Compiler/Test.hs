@@ -159,3 +159,13 @@ test_compile_fill_color_fn =
       (args [50, 50, 100 :: Int] ++ [fillArg])
       AST.zeroRange)
   where fillArg = kwArg "fill" $ funcCall "color.green" ([] :: [Int])
+
+test_compile_fill_gradient_fn =
+  assertFnCallCompilesTo
+    (D.Circle 50 50 100 $ D.GradientPaint $ D.LinearGradient (D.Color fg) (D.Color bg))
+    (AST.FunctionCall
+      (funcName "shape.circle")
+      (args [50, 50, 100 :: Int] ++ [fillArg])
+      AST.zeroRange)
+  where fillArg = arg $ funcCall "gradient.vertical" [fg, bg]
+        (fg, bg) = ("#ff0000", "#00ff00")
