@@ -47,7 +47,7 @@ uninline :: InlineSvg -> Svg
 uninline (InlineSvg defs main) = SVG.defs (mconcat defs) <> main
 
 instance Blaze.Attributable InlineSvg where
-  (InlineSvg defs main) ! attr = InlineSvg defs (main ! attr)
+  (!) (InlineSvg defs main) attr = InlineSvg defs (main ! attr)
 
 instance Renderable D.Document where
   renderToSvg (D.Document elems) =
