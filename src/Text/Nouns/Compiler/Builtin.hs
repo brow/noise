@@ -23,6 +23,7 @@ functionWithName name = case name of
     ["horizontal"]  -> Just horizontalGradient
     ["radial"]      -> Just radialGradient
     _               -> Nothing
+  ["image"]         -> Just image
   _                 -> Nothing
 
 rectangle :: Function F.Value
@@ -61,3 +62,11 @@ horizontalGradient = fmap F.GradientValue $ D.LinearGradient 0
 radialGradient :: Function F.Value
 radialGradient = fmap F.GradientValue $ D.RadialGradient
   <$> requireGradientColorArgs
+
+image :: Function F.Value
+image = fmap F.ElementValue $ D.Image
+  <$> requireArg "x"
+  <*> requireArg "y"
+  <*> requireArg "width"
+  <*> requireArg "height"
+  <*> requireArg "file"

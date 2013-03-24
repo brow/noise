@@ -29,6 +29,7 @@ data Statement = FunctionCallStatement FunctionCall deriving (Show, Eq)
 
 data Expression = FloatLiteral Double SourceRange
                 | HexRGBLiteral String SourceRange
+                | StringLiteral String SourceRange
                 | FunctionCallExp FunctionCall
                 deriving (Show, Eq)
 
@@ -55,6 +56,7 @@ instance HasSourceRange QualifiedIdentifier where
 instance HasSourceRange Expression where
   rangeInSource (FloatLiteral _ r) = r
   rangeInSource (HexRGBLiteral _ r) = r
+  rangeInSource (StringLiteral _ r) = r
   rangeInSource (FunctionCallExp fnCall) = rangeInSource fnCall
 
 instance HasSourceRange Argument where

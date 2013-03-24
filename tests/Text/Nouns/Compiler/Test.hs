@@ -3,6 +3,7 @@
 
 module Text.Nouns.Compiler.Test where
 
+import Data.Maybe (fromJust)
 import Test.Framework
 import Test.HUnit.Lang (Assertion)
 import qualified Text.Nouns.Compiler as Compiler
@@ -113,6 +114,22 @@ test_compile_rectangle =
     (AST.FunctionCall
       (funcName "shape.rectangle")
       (args [0, 0, 10, 10 :: Int])
+      AST.zeroRange)
+
+test_compile_image =
+  assertFnCallCompilesTo
+    (D.Image 10 10 50 50 $ fromJust $ D.fileIRI "cat.jpeg")
+    (AST.FunctionCall
+      (funcName "image")
+      (args [10, 10, 50, 50 :: Int] ++ [arg (AST.StringLiteral "cat.jpeg" AST.zeroRange)])
+      AST.zeroRange)
+
+test_compile_image_bad_filename =
+  assertFnCallFails
+    (Compiler.FunctionCallError AST.zeroRange (Compiler.ArgumentTypeError "file"))
+    (AST.FunctionCall
+      (funcName "image")
+      (args [0, 0, 10, 10 :: Int] ++ [arg (AST.StringLiteral "http://example.com/image.png" AST.zeroRange)])
       AST.zeroRange)
 
 test_compile_keyword_args =

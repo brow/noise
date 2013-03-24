@@ -2,6 +2,7 @@ module Text.Nouns.Parser.Token
 ( identifier
 , number
 , hexRGB
+, stringLiteral
 , whiteSpace
 , parens
 , commaSeparated
@@ -30,6 +31,9 @@ hexRGB :: Parser String
 hexRGB = lexeme $ do
   _ <- char '#'
   count 6 hexDigit
+
+stringLiteral :: Parser String
+stringLiteral = T.stringLiteral tokenParser
 
 whiteSpace :: Parser ()
 whiteSpace = T.whiteSpace tokenParser

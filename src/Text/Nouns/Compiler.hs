@@ -59,4 +59,5 @@ compileArgument (AST.KeywordArgument keyword valueExp _) = do
 compileExp :: AST.Expression -> Compiled F.Value
 compileExp (AST.FloatLiteral x _) = return (F.FloatValue x)
 compileExp (AST.HexRGBLiteral x _) = return (F.RGBValue x)
+compileExp (AST.StringLiteral x _) = return (F.StringValue x)
 compileExp (AST.FunctionCallExp fnCall) = compileFunctionCall fnCall

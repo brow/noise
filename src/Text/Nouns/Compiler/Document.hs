@@ -11,6 +11,7 @@ module Text.Nouns.Compiler.Document
 , black
 , showFuncIRI
 , localIRIForId
+, fileIRI
 ) where
 
 import qualified Network.URI as URI
@@ -31,6 +32,9 @@ showFuncIRI iri = "url(" ++ show iri ++ ")"
 localIRIForId :: String -> IRI
 localIRIForId id' = URI.nullURI { URI.uriFragment = fragment }
   where fragment = '#' : URI.escapeURIString URI.isUnescapedInURIComponent id'
+
+fileIRI :: String -> Maybe IRI
+fileIRI = URI.parseRelativeReference
 
 newtype Color = Color { hexString :: String } deriving (Eq)
 
@@ -65,4 +69,10 @@ data Element = Rectangle { x :: Coordinate
                       , r :: Length
                       , fill :: Paint
                       }
+             | Image { x :: Coordinate
+                     , y :: Coordinate
+                     , width :: Length
+                     , height :: Length
+                     , file :: IRI
+                     }
              deriving (Show, Eq)

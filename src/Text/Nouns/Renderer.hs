@@ -69,6 +69,14 @@ instance Renderable D.Element where
     ! At.r r
     ? fillAttr fill
 
+  renderToInlineSvg (D.Image x y w h file) = inline SVG.image
+    ! At.x x
+    ! At.y y
+    ! At.width w
+    ! At.height h
+    ! At.xlinkHref file
+    ! At.preserveaspectratio "none"
+
 instance Renderable D.Gradient where
   renderToSvg gradient = svgGradient $ forM_ (D.stops gradient) $ \(offset, color) ->
     SVG.stop

@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeSynonymInstances #-}
+
 module Text.Nouns.Compiler.Function
 ( Function
 , Value(..)
@@ -15,6 +17,7 @@ type Keyword = String
 
 data Value = FloatValue Double
            | RGBValue String
+           | StringValue String
            | ElementValue D.Element
            | GradientValue D.Gradient
 
@@ -55,7 +58,7 @@ call function args kwargs = case result of
 class FromValue a where
   fromValue :: Value -> Maybe a
 
-instance FromValue Double where
+instance FromValue D.Number where
   fromValue (FloatValue x) = Just x
   fromValue _ = Nothing
 
@@ -66,6 +69,10 @@ instance FromValue D.Paint where
 
 instance FromValue D.Color where
   fromValue (RGBValue x) = Just (D.Color x)
+  fromValue _ = Nothing
+
+instance FromValue D.IRI where
+  fromValue (StringValue x) = D.fileIRI x
   fromValue _ = Nothing
 
 getArg :: (FromValue a) => Keyword -> Maybe a -> Function a

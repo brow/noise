@@ -39,12 +39,20 @@ hexRGBLiteral = do
   end <- getPosition
   return $ AST.HexRGBLiteral hexString (start, end)
 
+stringLiteral :: Parser AST.Expression
+stringLiteral = do
+  start <- getPosition
+  string <- Token.stringLiteral
+  end <- getPosition
+  return $ AST.StringLiteral string (start, end)
+
 functionCallExp :: Parser AST.Expression
 functionCallExp = fmap AST.FunctionCallExp functionCall
 
 expression :: Parser AST.Expression
 expression = try hexRGBLiteral <|>
              try floatLiteral <|>
+             try stringLiteral <|>
              functionCallExp
 
 statement :: Parser AST.Statement

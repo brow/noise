@@ -50,6 +50,14 @@ test_function_color_arg =
       [AST.PositionalArgument $ AST.HexRGBLiteral "12aC3b" (range 6 7)]
       (range 1 13))
 
+test_function_string_args =
+  assertParseFnCall
+    "text(\"def\")"
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["text"] (range 1 4))
+      [AST.PositionalArgument $ AST.StringLiteral "def" (range 6 5)]
+      (range 1 11))
+
 test_function_keyword_arg =
   assertParseFnCall
     "fn(foo=123)"
