@@ -162,7 +162,7 @@ test_compile_fill_color_fn =
 
 test_compile_fill_gradient_fn =
   assertFnCallCompilesTo
-    (D.Circle 50 50 100 $ D.GradientPaint $ D.LinearGradient 90 (D.Color fg) (D.Color bg))
+    (D.Circle 50 50 100 $ D.GradientPaint $ D.LinearGradient 90 [(0, D.Color fg), (1, D.Color bg)])
     (AST.FunctionCall
       (funcName "shape.circle")
       (args [50, 50, 100 :: Int] ++ [fillArg])

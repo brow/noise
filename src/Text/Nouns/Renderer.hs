@@ -6,6 +6,7 @@ import           Numeric (showHex)
 import           Data.Monoid
 import           Data.List (foldl')
 import           Data.ByteString (unpack)
+import           Control.Monad (forM_)
 import qualified Crypto.Hash.SHA1 as SHA1
 import qualified Text.Blaze.Internal as Blaze
 import qualified Text.Blaze.Svg11 as SVG
@@ -69,24 +70,18 @@ instance Renderable D.Element where
     ? fillAttr fill
 
 instance Renderable D.Gradient where
-  renderToSvg (D.LinearGradient angle color0 color1) =
-    SVG.lineargradient
-      ! At.x2 (cos radians)
-      ! At.y2 (sin radians)
-      $ stops color0 color1
-    where radians = angle * pi / 180
-  renderToSvg (D.RadialGradient color0 color1) =
-    SVG.radialgradient
-      $ stops color0 color1
-
-stops :: D.Color -> D.Color -> Svg
-stops c0 c1 = do
-  SVG.stop
-    ! At.offset 0
-    ! At.stopColor c0
-  SVG.stop
-    ! At.offset 1
-    ! At.stopColor c1
+  renderToSvg gradient = svgGradient $ forM_ (D.stops gradient) $ \(offset, color) ->
+    SVG.stop
+      ! At.offset offset
+      ! At.stopColor color
+    where
+      svgGradient = case gradient of
+        (D.RadialGradient _ ) -> SVG.radialgradient
+        (D.LinearGradient angle _ ) ->
+          let radians = angle * pi / 180
+          in SVG.lineargradient
+            ! At.x2 (cos radians)
+            ! At.y2 (sin radians)
 
 strAttr :: (SVG.AttributeValue -> SVG.Attribute) -> String -> InlineAttribute
 strAttr attrFn = InlineAttribute Nothing . attrFn . Blaze.stringValue

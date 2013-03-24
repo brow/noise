@@ -44,17 +44,20 @@ circle = fmap F.ElementValue $ D.Circle
 color :: String -> Function F.Value
 color = return . F.RGBValue
 
+requireGradientColorArgs :: Function [(D.Number,D.Color)]
+requireGradientColorArgs = do
+  from <- requireArg "from"
+  to <- requireArg "to"
+  return [(0, from), (1, to)]
+
 verticalGradient :: Function F.Value
 verticalGradient = fmap F.GradientValue $ D.LinearGradient 90
-  <$> requireArg "from"
-  <*> requireArg "to"
+  <$> requireGradientColorArgs
 
 horizontalGradient :: Function F.Value
 horizontalGradient = fmap F.GradientValue $ D.LinearGradient 0
-  <$> requireArg "from"
-  <*> requireArg "to"
+  <$> requireGradientColorArgs
 
 radialGradient :: Function F.Value
 radialGradient = fmap F.GradientValue $ D.RadialGradient
-  <$> requireArg "from"
-  <*> requireArg "to"
+  <$> requireGradientColorArgs
