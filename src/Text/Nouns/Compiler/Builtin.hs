@@ -21,6 +21,7 @@ functionWithName name = case name of
   "gradient" : x -> case x of
     ["vertical"]    -> Just verticalGradient
     ["horizontal"]  -> Just horizontalGradient
+    ["radial"]      -> Just radialGradient
     _               -> Nothing
   _                 -> Nothing
 
@@ -50,5 +51,10 @@ verticalGradient = fmap F.GradientValue $ D.LinearGradient 90
 
 horizontalGradient :: Function F.Value
 horizontalGradient = fmap F.GradientValue $ D.LinearGradient 0
+  <$> requireArg "from"
+  <*> requireArg "to"
+
+radialGradient :: Function F.Value
+radialGradient = fmap F.GradientValue $ D.RadialGradient
   <$> requireArg "from"
   <*> requireArg "to"

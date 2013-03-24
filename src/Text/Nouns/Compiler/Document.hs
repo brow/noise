@@ -37,7 +37,9 @@ newtype Color = Color { hexString :: String } deriving (Eq)
 instance Show Color where
   show color = '#' : hexString color
 
-data Gradient = LinearGradient Angle Color Color deriving (Eq, Show)
+data Gradient = LinearGradient Angle Color Color
+              | RadialGradient Color Color
+              deriving (Eq, Show)
 
 data Paint = ColorPaint Color
            | GradientPaint Gradient
