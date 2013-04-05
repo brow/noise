@@ -39,7 +39,7 @@ circle :: Function F.Value
 circle = fmap F.ElementValue $ D.Circle
   <$> requireArg "cx"
   <*> requireArg "cy"
-  <*> requireArg "r"
+  <*> requireArg "radius"
   <*> acceptArg "fill" D.black
 
 color :: String -> Function F.Value
