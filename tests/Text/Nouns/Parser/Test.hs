@@ -60,7 +60,7 @@ test_function_string_args =
 
 test_function_keyword_arg =
   assertParseFnCall
-    "fn(foo=123)"
+    "fn(foo:123)"
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["fn"] (range 1 2))
       [AST.KeywordArgument "foo" (AST.FloatLiteral 123 (range 8 3)) (range 4 7)]
