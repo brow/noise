@@ -1,10 +1,5 @@
 module Text.Nouns.Parser.AST
-( SourceRange
-, HasSourceRange
-, rangeInSource
-, oneLineRange
-, zeroRange
-, SourceFile(..)
+( SourceFile(..)
 , FunctionCall(..)
 , QualifiedIdentifier(..)
 , Identifier
@@ -13,9 +8,7 @@ module Text.Nouns.Parser.AST
 , Statement(..)
 ) where
 
-import qualified Text.Parsec.Pos as Parsec
-
-type SourceRange = (Parsec.SourcePos, Parsec.SourcePos)
+import Text.Nouns.SourceRange (SourceRange, HasSourceRange(..))
 
 data SourceFile = SourceFile [Statement] SourceRange deriving (Show, Eq)
 
@@ -36,16 +29,6 @@ data Expression = FloatLiteral Double SourceRange
 data Argument = KeywordArgument Identifier Expression SourceRange
               | PositionalArgument Expression
               deriving (Show, Eq)
-
-oneLineRange :: Parsec.SourceName -> Int -> Int -> SourceRange
-oneLineRange name col len = ( Parsec.newPos name 1 col
-                            , Parsec.newPos name 1 (col + len))
-
-zeroRange :: SourceRange
-zeroRange = oneLineRange "" 1 0
-
-class HasSourceRange a where
-  rangeInSource :: a -> SourceRange
 
 instance HasSourceRange SourceFile where
   rangeInSource (SourceFile _ r) = r

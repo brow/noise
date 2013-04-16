@@ -10,12 +10,31 @@ import qualified Text.Nouns.Parser.AST as AST
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
 import qualified Text.Nouns.Compiler.Builtin as Builtin
+import qualified Text.Nouns.Error as Error
+import Text.Nouns.SourceRange (SourceRange, HasSourceRange, rangeInSource)
 import Text.Nouns.Compiler.Function (FunctionError(..))
 
-data CompileError = FunctionCallError AST.SourceRange FunctionError
-                  | UndefinedFunctionError AST.SourceRange
-                  | StatementReturnTypeError AST.SourceRange
+data CompileError = FunctionCallError SourceRange FunctionError
+                  | UndefinedFunctionError SourceRange
+                  | StatementReturnTypeError SourceRange
                   deriving (Show, Eq)
+
+instance HasSourceRange CompileError where
+  rangeInSource (FunctionCallError r _) = r
+  rangeInSource (UndefinedFunctionError r) = r
+  rangeInSource (StatementReturnTypeError r) = r
+
+instance Error.Error CompileError where
+  message (UndefinedFunctionError _) =
+    "Undefined function."
+  message (StatementReturnTypeError _) =
+    "Top-level function call does not return an element."
+  message (FunctionCallError _ (MissingArgumentError keyword)) =
+    "Missing '" ++ keyword ++ "' argument."
+  message (FunctionCallError _ (ArgumentTypeError keyword)) =
+    "Argument '" ++ keyword ++ "' has the wrong type."
+  message (FunctionCallError _ TooManyArgumentsError) =
+    "Too many arguments."
 
 type Compiled a = Either CompileError a
 
@@ -29,7 +48,7 @@ compileStatement (AST.FunctionCallStatement fnCall) = do
   value <- compileFunctionCall fnCall
   case value of
     F.ElementValue element -> return element
-    _ -> Left $ StatementReturnTypeError (AST.rangeInSource fnCall)
+    _ -> Left $ StatementReturnTypeError (rangeInSource fnCall)
 
 compileFunctionCall :: AST.FunctionCall -> Compiled F.Value
 compileFunctionCall (AST.FunctionCall name args srcRange) = do

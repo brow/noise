@@ -9,12 +9,13 @@ import Test.HUnit.Lang (Assertion)
 import qualified Text.Nouns.Compiler as Compiler
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Parser.AST as AST
+import Text.Nouns.SourceRange (zeroRange)
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
 sourceFileWithFnCall :: AST.FunctionCall -> AST.SourceFile
 sourceFileWithFnCall fnCall =
-  AST.SourceFile [AST.FunctionCallStatement fnCall] AST.zeroRange
+  AST.SourceFile [AST.FunctionCallStatement fnCall] zeroRange
 
 assertFnCallCompilesTo :: D.Element -> AST.FunctionCall -> Assertion
 assertFnCallCompilesTo element fnCall =
@@ -30,10 +31,10 @@ class ToValue a where
   toValue :: a -> AST.Expression
 
 instance ToValue Int where
-  toValue x = AST.FloatLiteral (fromIntegral x) AST.zeroRange
+  toValue x = AST.FloatLiteral (fromIntegral x) zeroRange
 
 instance ToValue String where
-  toValue s = AST.HexRGBLiteral s AST.zeroRange
+  toValue s = AST.HexRGBLiteral s zeroRange
 
 instance ToValue AST.FunctionCall where
   toValue = AST.FunctionCallExp
@@ -48,7 +49,7 @@ args :: (ToValue a) => [a] -> [AST.Argument]
 args = map arg
 
 funcName :: String -> AST.QualifiedIdentifier
-funcName str = AST.QualifiedIdentifier (splitBy '.' str) AST.zeroRange
+funcName str = AST.QualifiedIdentifier (splitBy '.' str) zeroRange
   where splitBy _ [] = []
         splitBy x (y:ys)
           | x == y    = [] : rest
@@ -57,56 +58,56 @@ funcName str = AST.QualifiedIdentifier (splitBy '.' str) AST.zeroRange
            where rest = splitBy x ys
 
 funcCall :: (ToValue a) => String -> [a] -> AST.FunctionCall
-funcCall name posArgs = AST.FunctionCall (funcName name) (args posArgs) AST.zeroRange
+funcCall name posArgs = AST.FunctionCall (funcName name) (args posArgs) zeroRange
 
 kwArg :: (ToValue a) => String -> a -> AST.Argument
-kwArg key x = AST.KeywordArgument key (toValue x) AST.zeroRange
+kwArg key x = AST.KeywordArgument key (toValue x) zeroRange
 
 test_compile_undefined =
   assertFnCallFails
-    (Compiler.UndefinedFunctionError AST.zeroRange)
-    (AST.FunctionCall (funcName "shape.squircle") [] AST.zeroRange)
+    (Compiler.UndefinedFunctionError zeroRange)
+    (AST.FunctionCall (funcName "shape.squircle") [] zeroRange)
 
 test_compile_statement_type_error =
   assertFnCallFails
-    (Compiler.StatementReturnTypeError AST.zeroRange)
+    (Compiler.StatementReturnTypeError zeroRange)
     (AST.FunctionCall
       (funcName "color.red")
       []
-      AST.zeroRange)
+      zeroRange)
 
 test_compile_missing_args =
   assertFnCallFails
-    (Compiler.FunctionCallError AST.zeroRange (Compiler.MissingArgumentError "x"))
+    (Compiler.FunctionCallError zeroRange (Compiler.MissingArgumentError "x"))
     (AST.FunctionCall
       (funcName "shape.rectangle")
       []
-      AST.zeroRange)
+      zeroRange)
 
 test_compile_literal_arg_type_error =
   assertFnCallFails
-    (Compiler.FunctionCallError AST.zeroRange (Compiler.ArgumentTypeError "fill"))
+    (Compiler.FunctionCallError zeroRange (Compiler.ArgumentTypeError "fill"))
     (AST.FunctionCall
       (funcName "shape.circle")
       (args [0, 0, 10, 10 :: Int])
-      AST.zeroRange)
+      zeroRange)
 
 test_compile_fn_arg_type_error =
   assertFnCallFails
-    (Compiler.FunctionCallError AST.zeroRange (Compiler.ArgumentTypeError "fill"))
+    (Compiler.FunctionCallError zeroRange (Compiler.ArgumentTypeError "fill"))
     (AST.FunctionCall
       (funcName "shape.circle")
       (args [0, 0, 10 :: Int] ++ [fillArg])
-      AST.zeroRange)
+      zeroRange)
   where fillArg = kwArg "fill" $ funcCall "shape.circle" [1, 2, 3 :: Int]
 
 test_compile_too_many_args =
   assertFnCallFails
-    (Compiler.FunctionCallError AST.zeroRange Compiler.TooManyArgumentsError)
+    (Compiler.FunctionCallError zeroRange Compiler.TooManyArgumentsError)
     (AST.FunctionCall
       (funcName "shape.circle")
       (args [0, 0, 10 :: Int] ++ args ["ffffff", "000000"])
-      AST.zeroRange)
+      zeroRange)
 
 test_compile_rectangle =
   assertFnCallCompilesTo
@@ -114,23 +115,23 @@ test_compile_rectangle =
     (AST.FunctionCall
       (funcName "shape.rectangle")
       (args [0, 0, 10, 10 :: Int])
-      AST.zeroRange)
+      zeroRange)
 
 test_compile_image =
   assertFnCallCompilesTo
     (D.Image 10 10 50 50 $ fromJust $ D.fileIRI "cat.jpeg")
     (AST.FunctionCall
       (funcName "image")
-      (args [10, 10, 50, 50 :: Int] ++ [arg (AST.StringLiteral "cat.jpeg" AST.zeroRange)])
-      AST.zeroRange)
+      (args [10, 10, 50, 50 :: Int] ++ [arg (AST.StringLiteral "cat.jpeg" zeroRange)])
+      zeroRange)
 
 test_compile_image_bad_filename =
   assertFnCallFails
-    (Compiler.FunctionCallError AST.zeroRange (Compiler.ArgumentTypeError "file"))
+    (Compiler.FunctionCallError zeroRange (Compiler.ArgumentTypeError "file"))
     (AST.FunctionCall
       (funcName "image")
-      (args [0, 0, 10, 10 :: Int] ++ [arg (AST.StringLiteral "http://example.com/image.png" AST.zeroRange)])
-      AST.zeroRange)
+      (args [0, 0, 10, 10 :: Int] ++ [arg (AST.StringLiteral "http://example.com/image.png" zeroRange)])
+      zeroRange)
 
 test_compile_keyword_args =
   assertFnCallCompilesTo
@@ -142,7 +143,7 @@ test_compile_keyword_args =
       , kwArg "y" (0 :: Int)
       , kwArg "height" (10 :: Int)
       ]
-      AST.zeroRange)
+      zeroRange)
 
 test_compile_rounded_rectangle =
   assertFnCallCompilesTo
@@ -150,7 +151,7 @@ test_compile_rounded_rectangle =
     (AST.FunctionCall
       (funcName "shape.rectangle")
       (args [0, 0, 10, 10, 2 :: Int])
-      AST.zeroRange)
+      zeroRange)
 
 test_compile_circle =
   assertFnCallCompilesTo
@@ -158,7 +159,7 @@ test_compile_circle =
     (AST.FunctionCall
       (funcName "shape.circle")
       (args [50, 50, 100 :: Int])
-      AST.zeroRange)
+      zeroRange)
 
 test_compile_fill_color_literal =
   assertFnCallCompilesTo
@@ -166,7 +167,7 @@ test_compile_fill_color_literal =
     (AST.FunctionCall
       (funcName "shape.circle")
       (args [50, 50, 100 :: Int] ++ [kwArg "fill" "123abc"])
-      AST.zeroRange)
+      zeroRange)
 
 test_compile_fill_color_fn =
   assertFnCallCompilesTo
@@ -174,7 +175,7 @@ test_compile_fill_color_fn =
     (AST.FunctionCall
       (funcName "shape.circle")
       (args [50, 50, 100 :: Int] ++ [fillArg])
-      AST.zeroRange)
+      zeroRange)
   where fillArg = kwArg "fill" $ funcCall "color.green" ([] :: [Int])
 
 test_compile_fill_gradient_fn =
@@ -183,6 +184,6 @@ test_compile_fill_gradient_fn =
     (AST.FunctionCall
       (funcName "shape.circle")
       (args [50, 50, 100 :: Int] ++ [fillArg])
-      AST.zeroRange)
+      zeroRange)
   where fillArg = arg $ funcCall "gradient.vertical" [fg, bg]
         (fg, bg) = ("#ff0000", "#00ff00")

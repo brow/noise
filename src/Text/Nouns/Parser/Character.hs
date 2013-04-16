@@ -7,7 +7,7 @@ module Text.Nouns.Parser.Character
 ) where
 
 import Text.Parsec.Pos (SourcePos, updatePosChar, initialPos, sourceName)
-import Text.Nouns.Parser.AST (SourceRange)
+import Text.Nouns.SourceRange (SourceRange)
 import Data.List (elemIndex)
 
 type Location = Int
