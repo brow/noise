@@ -1,28 +1,39 @@
 {-# OPTIONS_GHC -F -pgmF htfpp -fno-warn-missing-signatures #-}
-
 module Text.Nouns.Parser.Test where
 
 import Test.Framework
 import Test.HUnit.Lang (Assertion)
+import qualified Text.Nouns.Error as Error
 import qualified Text.Nouns.Parser as Parser
 import qualified Text.Nouns.Parser.AST as AST
+import Text.Nouns.SourceRange (SourceRange, rangeInSource, oneLineRange)
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
 assertParseFnCall :: String -> AST.FunctionCall -> Assertion
-assertParseFnCall str expected = case Parser.parse str of
-  Right ast -> assertEqual (wrapFnCall expected) ast
+assertParseFnCall source expectedAST = case Parser.parse source of
+  Right ast -> assertEqual (wrapFnCall expectedAST) ast
   Left err -> assertFailure $ "parse failed: " ++ show err
   where wrapFnCall fnCall = AST.SourceFile
           [AST.FunctionCallStatement fnCall]
-          (AST.rangeInSource fnCall)
+          (rangeInSource fnCall)
+
+assertParseErrorMessage :: String -> String -> Assertion
+assertParseErrorMessage source expectedMessage = case Parser.parse source of
+  Right _ -> assertFailure "parse succeeded"
+  Left err -> assertEqual expectedMessage (Error.message err)
 
 arg :: Double -> (Int, Int) -> AST.Argument
 arg val (loc,len) = AST.PositionalArgument $ AST.FloatLiteral val argRange
-  where argRange = AST.oneLineRange "" loc len
+  where argRange = oneLineRange "" loc len
 
-range :: Int -> Int -> AST.SourceRange
-range = AST.oneLineRange ""
+range :: Int -> Int -> SourceRange
+range = oneLineRange ""
+
+test_missing_parens =
+  assertParseErrorMessage
+    "foo"
+    "Unexpected end of input. Expecting letter or digit, \"_\", \".\" or \"(\"."
 
 test_function_no_args =
   assertParseFnCall
