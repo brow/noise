@@ -9,6 +9,7 @@ import Test.HUnit.Lang (Assertion)
 import qualified Text.Nouns.Compiler as Compiler
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Parser.AST as AST
+import qualified Text.Nouns.Error as Error
 import Text.Nouns.SourceRange (zeroRange)
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
@@ -26,6 +27,12 @@ assertFnCallCompilesTo element fnCall =
 assertFnCallFails :: Compiler.CompileError -> AST.FunctionCall -> Assertion
 assertFnCallFails err fnCall =
   assertEqual (Left err) $ Compiler.compile (sourceFileWithFnCall fnCall)
+
+assertFnCallFailsWithErrorMessage :: String -> AST.FunctionCall -> Assertion
+assertFnCallFailsWithErrorMessage message fnCall =
+  case Compiler.compile (sourceFileWithFnCall fnCall) of
+    Right _ -> assertFailure "function call did not fail"
+    Left err -> assertEqual message (Error.message err)
 
 class ToValue a where
   toValue :: a -> AST.Expression
@@ -65,49 +72,44 @@ kwArg key x = AST.KeywordArgument key (toValue x) zeroRange
 
 test_compile_undefined =
   assertFnCallFails
-    (Compiler.UndefinedFunctionError zeroRange)
+    (Compiler.UndefinedFunctionError (funcName "shape.squircle"))
     (AST.FunctionCall (funcName "shape.squircle") [] zeroRange)
 
-test_compile_statement_type_error =
-  assertFnCallFails
-    (Compiler.StatementReturnTypeError zeroRange)
-    (AST.FunctionCall
-      (funcName "color.red")
-      []
-      zeroRange)
+test_compile_statement_type_error = assertFnCallFails err fnCall where
+  err = Compiler.StatementReturnTypeError fnCall
+  fnCall = AST.FunctionCall
+    (funcName "color.red")
+    []
+    zeroRange
 
-test_compile_missing_args =
-  assertFnCallFails
-    (Compiler.FunctionCallError zeroRange (Compiler.MissingArgumentError "x"))
-    (AST.FunctionCall
-      (funcName "shape.rectangle")
-      []
-      zeroRange)
+test_compile_missing_args = assertFnCallFails err fnCall where
+  err = Compiler.FunctionCallError fnCall (Compiler.MissingArgumentError "x")
+  fnCall = AST.FunctionCall
+    (funcName "shape.rectangle")
+    []
+    zeroRange
 
-test_compile_literal_arg_type_error =
-  assertFnCallFails
-    (Compiler.FunctionCallError zeroRange (Compiler.ArgumentTypeError "fill"))
-    (AST.FunctionCall
-      (funcName "shape.circle")
-      (args [0, 0, 10, 10 :: Int])
-      zeroRange)
+test_compile_literal_arg_type_error = assertFnCallFails err fnCall where
+  err = Compiler.FunctionCallError fnCall (Compiler.ArgumentTypeError "fill")
+  fnCall = AST.FunctionCall
+    (funcName "shape.circle")
+    (args [0, 0, 10, 10 :: Int])
+    zeroRange
 
-test_compile_fn_arg_type_error =
-  assertFnCallFails
-    (Compiler.FunctionCallError zeroRange (Compiler.ArgumentTypeError "fill"))
-    (AST.FunctionCall
-      (funcName "shape.circle")
-      (args [0, 0, 10 :: Int] ++ [fillArg])
-      zeroRange)
-  where fillArg = kwArg "fill" $ funcCall "shape.circle" [1, 2, 3 :: Int]
+test_compile_fn_arg_type_error = assertFnCallFails err fnCall where
+  err = Compiler.FunctionCallError fnCall (Compiler.ArgumentTypeError "fill")
+  fnCall = AST.FunctionCall
+    (funcName "shape.circle")
+    (args [0, 0, 10 :: Int] ++ [fillArg])
+    zeroRange
+  fillArg = kwArg "fill" $ funcCall "shape.circle" [1, 2, 3 :: Int]
 
-test_compile_too_many_args =
-  assertFnCallFails
-    (Compiler.FunctionCallError zeroRange Compiler.TooManyArgumentsError)
-    (AST.FunctionCall
+test_compile_too_many_args = assertFnCallFails err fnCall where
+    err = Compiler.FunctionCallError fnCall Compiler.TooManyArgumentsError
+    fnCall = AST.FunctionCall
       (funcName "shape.circle")
       (args [0, 0, 10 :: Int] ++ args ["ffffff", "000000"])
-      zeroRange)
+      zeroRange
 
 test_compile_rectangle =
   assertFnCallCompilesTo
@@ -125,13 +127,12 @@ test_compile_image =
       (args [10, 10, 50, 50 :: Int] ++ [arg (AST.StringLiteral "cat.jpeg" zeroRange)])
       zeroRange)
 
-test_compile_image_bad_filename =
-  assertFnCallFails
-    (Compiler.FunctionCallError zeroRange (Compiler.ArgumentTypeError "file"))
-    (AST.FunctionCall
+test_compile_image_bad_filename = assertFnCallFails err fnCall where
+    err = Compiler.FunctionCallError fnCall (Compiler.ArgumentTypeError "file")
+    fnCall = AST.FunctionCall
       (funcName "image")
       (args [0, 0, 10, 10 :: Int] ++ [arg (AST.StringLiteral "http://example.com/image.png" zeroRange)])
-      zeroRange)
+      zeroRange
 
 test_compile_keyword_args =
   assertFnCallCompilesTo
@@ -187,3 +188,19 @@ test_compile_fill_gradient_fn =
       zeroRange)
   where fillArg = arg $ funcCall "gradient.vertical" [fg, bg]
         (fg, bg) = ("#ff0000", "#00ff00")
+
+test_undefined_fn_message =
+  assertFnCallFailsWithErrorMessage
+    "Undefined function \"foo\"."
+    (AST.FunctionCall
+      (funcName "foo")
+      []
+      zeroRange)
+
+test_statement_return_type_message =
+  assertFnCallFailsWithErrorMessage
+    "Function \"color.red\" does not return an element."
+    (AST.FunctionCall
+      (funcName "color.red")
+      []
+      zeroRange)

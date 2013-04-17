@@ -6,35 +6,39 @@ module Text.Nouns.Compiler
 
 import Control.Monad.Instances ()
 import Data.Either (partitionEithers)
+import qualified Data.List as List
 import qualified Text.Nouns.Parser.AST as AST
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
 import qualified Text.Nouns.Compiler.Builtin as Builtin
 import qualified Text.Nouns.Error as Error
-import Text.Nouns.SourceRange (SourceRange, HasSourceRange, rangeInSource)
+import Text.Nouns.SourceRange (HasSourceRange, rangeInSource)
 import Text.Nouns.Compiler.Function (FunctionError(..))
 
-data CompileError = FunctionCallError SourceRange FunctionError
-                  | UndefinedFunctionError SourceRange
-                  | StatementReturnTypeError SourceRange
+data CompileError = FunctionCallError AST.FunctionCall FunctionError
+                  | UndefinedFunctionError AST.QualifiedIdentifier
+                  | StatementReturnTypeError AST.FunctionCall
                   deriving (Show, Eq)
 
 instance HasSourceRange CompileError where
-  rangeInSource (FunctionCallError r _) = r
-  rangeInSource (UndefinedFunctionError r) = r
-  rangeInSource (StatementReturnTypeError r) = r
+  rangeInSource (FunctionCallError ast _) = rangeInSource ast
+  rangeInSource (UndefinedFunctionError ast) = rangeInSource ast
+  rangeInSource (StatementReturnTypeError ast) = rangeInSource ast
 
 instance Error.Error CompileError where
-  message (UndefinedFunctionError _) =
-    "Undefined function."
-  message (StatementReturnTypeError _) =
-    "Top-level function call does not return an element."
-  message (FunctionCallError _ (MissingArgumentError keyword)) =
-    "Missing '" ++ keyword ++ "' argument."
-  message (FunctionCallError _ (ArgumentTypeError keyword)) =
-    "Argument '" ++ keyword ++ "' has the wrong type."
-  message (FunctionCallError _ TooManyArgumentsError) =
-    "Too many arguments."
+  message compileError = case compileError of
+    UndefinedFunctionError identifier ->
+      "Undefined function \"" ++ showDotSyntax identifier ++ "\"."
+    StatementReturnTypeError (AST.FunctionCall identifier _ _) ->
+      "Function \"" ++ showDotSyntax identifier ++ "\" does not return an element."
+    FunctionCallError _ (MissingArgumentError keyword) ->
+      "Missing '" ++ keyword ++ "' argument."
+    FunctionCallError _ (ArgumentTypeError keyword) ->
+      "Argument '" ++ keyword ++ "' has the wrong type."
+    FunctionCallError _ TooManyArgumentsError ->
+      "Too many arguments."
+    where showDotSyntax (AST.QualifiedIdentifier components _) =
+            List.intercalate "." components
 
 type Compiled a = Either CompileError a
 
@@ -48,21 +52,21 @@ compileStatement (AST.FunctionCallStatement fnCall) = do
   value <- compileFunctionCall fnCall
   case value of
     F.ElementValue element -> return element
-    _ -> Left $ StatementReturnTypeError (rangeInSource fnCall)
+    _                      -> Left (StatementReturnTypeError fnCall)
 
 compileFunctionCall :: AST.FunctionCall -> Compiled F.Value
-compileFunctionCall (AST.FunctionCall name args srcRange) = do
+compileFunctionCall functionCall@(AST.FunctionCall name args _) = do
   function <- compileFunctionName name
   (posArgs, kwArgs) <- compileArguments args
   case F.call function posArgs kwArgs of
-    Left callError -> Left $ FunctionCallError srcRange callError
-    Right value -> Right value
+    Left callError -> Left (FunctionCallError functionCall callError)
+    Right value    -> Right value
 
 compileFunctionName :: AST.QualifiedIdentifier -> Compiled (F.Function F.Value)
-compileFunctionName (AST.QualifiedIdentifier components srcRange) =
+compileFunctionName identifier@(AST.QualifiedIdentifier components _) =
   case Builtin.functionWithName components of
     Just function -> Right function
-    _ -> Left $ UndefinedFunctionError srcRange
+    _             -> Left (UndefinedFunctionError identifier)
 
 compileArguments :: [AST.Argument] -> Compiled ([F.Value], [(String, F.Value)])
 compileArguments = fmap partitionEithers . mapM compileArgument
