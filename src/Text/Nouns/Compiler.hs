@@ -31,12 +31,12 @@ instance Error.Error CompileError where
       "Undefined function \"" ++ showDotSyntax identifier ++ "\"."
     StatementReturnTypeError (AST.FunctionCall identifier _ _) ->
       "Function \"" ++ showDotSyntax identifier ++ "\" does not return an element."
-    FunctionCallError _ (MissingArgumentError keyword) ->
-      "Missing '" ++ keyword ++ "' argument."
-    FunctionCallError _ (ArgumentTypeError keyword) ->
-      "Argument '" ++ keyword ++ "' has the wrong type."
-    FunctionCallError _ TooManyArgumentsError ->
-      "Too many arguments."
+    FunctionCallError (AST.FunctionCall identifier _ _) (MissingArgumentError keyword) ->
+      "Function \"" ++ showDotSyntax identifier ++ "\" requires argument \"" ++ keyword ++ "\"."
+    FunctionCallError (AST.FunctionCall identifier _ _) (ArgumentTypeError keyword) ->
+      "Argument \"" ++ keyword ++ "\" to function \"" ++ showDotSyntax identifier ++ "\" has incorrect type."
+    FunctionCallError (AST.FunctionCall identifier _ _) TooManyArgumentsError ->
+      "Too many arguments to function \"" ++ showDotSyntax identifier ++ "\"."
     where showDotSyntax (AST.QualifiedIdentifier components _) =
             List.intercalate "." components
 

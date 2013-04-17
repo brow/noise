@@ -204,3 +204,27 @@ test_statement_return_type_message =
       (funcName "color.red")
       []
       zeroRange)
+
+test_missing_arg_message =
+  assertFnCallFailsWithErrorMessage
+    "Function \"shape.circle\" requires argument \"cx\"."
+    (AST.FunctionCall
+      (funcName "shape.circle")
+      []
+      zeroRange)
+
+test_arg_type_message =
+  assertFnCallFailsWithErrorMessage
+    "Argument \"cx\" to function \"shape.circle\" has incorrect type."
+    (AST.FunctionCall
+      (funcName "shape.circle")
+      [arg "ffffff"]
+      zeroRange)
+
+test_arg_count_message =
+  assertFnCallFailsWithErrorMessage
+    "Too many arguments to function \"color.red\"."
+    (AST.FunctionCall
+      (funcName "color.red")
+      [arg "ffffff"]
+      zeroRange)
