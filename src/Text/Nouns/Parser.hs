@@ -55,8 +55,22 @@ expression = try hexRGBLiteral <|>
              try stringLiteral <|>
              functionCallExp
 
+functionCallStatement :: Parser AST.Statement
+functionCallStatement = fmap AST.FunctionCallStatement functionCall
+
+functionDefStatement :: Parser AST.Statement
+functionDefStatement = do
+  start <- getPosition
+  Token.reserved "let"
+  name <- qualifiedIdentifier
+  _ <- Token.symbol "="
+  definition <- expression
+  end <- getPosition
+  return $ AST.FunctionDefStatement name definition (start, end)
+
 statement :: Parser AST.Statement
-statement = fmap AST.FunctionCallStatement functionCall
+statement = try functionDefStatement <|>
+            functionCallStatement
 
 keywordArgument :: Parser AST.Argument
 keywordArgument = do

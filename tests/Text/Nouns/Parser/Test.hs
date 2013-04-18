@@ -11,12 +11,15 @@ import Text.Nouns.SourceRange (SourceRange, rangeInSource, oneLineRange)
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
 assertParseFnCall :: String -> AST.FunctionCall -> Assertion
-assertParseFnCall source expectedAST = case Parser.parse source of
-  Right ast -> assertEqual (wrapFnCall expectedAST) ast
+assertParseFnCall source fnCallAST = assertParse source $
+  AST.SourceFile
+    [AST.FunctionCallStatement fnCallAST]
+    (rangeInSource fnCallAST)
+
+assertParse :: String -> AST.SourceFile -> Assertion
+assertParse source expectedAST = case Parser.parse source of
+  Right ast -> assertEqual expectedAST ast
   Left err -> assertFailure $ "parse failed: " ++ show err
-  where wrapFnCall fnCall = AST.SourceFile
-          [AST.FunctionCallStatement fnCall]
-          (rangeInSource fnCall)
 
 assertParseErrorMessage :: String -> String -> Assertion
 assertParseErrorMessage source expectedMessage = case Parser.parse source of
@@ -77,7 +80,7 @@ test_function_keyword_arg =
       [AST.KeywordArgument "foo" (AST.FloatLiteral 123 (range 8 3)) (range 4 7)]
       (range 1 11))
 
-test_function_fn_arg =
+test_nested_function_call =
   assertParseFnCall
     "foo(bar())"
     (AST.FunctionCall
@@ -89,3 +92,13 @@ test_function_fn_arg =
             []
             (range 5 5)))]
       (range 1 10))
+
+test_function_def =
+  assertParse
+    "let red = #ff0000"
+    (AST.SourceFile
+      [AST.FunctionDefStatement
+        (AST.QualifiedIdentifier ["red"] (range 5 4))
+        (AST.HexRGBLiteral "ff0000" (range 11 7))
+        (range 1 17)]
+      (range 1 17))

@@ -21,9 +21,9 @@ data CompileError = FunctionCallError AST.FunctionCall FunctionError
                   deriving (Show, Eq)
 
 instance HasSourceRange CompileError where
-  rangeInSource (FunctionCallError ast _) = rangeInSource ast
-  rangeInSource (UndefinedFunctionError ast) = rangeInSource ast
-  rangeInSource (StatementReturnTypeError ast) = rangeInSource ast
+  rangeInSource (FunctionCallError fnCall _) = rangeInSource fnCall
+  rangeInSource (UndefinedFunctionError identifier) = rangeInSource identifier
+  rangeInSource (StatementReturnTypeError fnCall) = rangeInSource fnCall
 
 instance Error.Error CompileError where
   message compileError = case compileError of

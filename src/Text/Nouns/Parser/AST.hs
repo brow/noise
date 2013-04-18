@@ -18,7 +18,9 @@ data QualifiedIdentifier = QualifiedIdentifier [Identifier] SourceRange deriving
 
 type Identifier = String
 
-data Statement = FunctionCallStatement FunctionCall deriving (Show, Eq)
+data Statement = FunctionCallStatement FunctionCall
+               | FunctionDefStatement QualifiedIdentifier Expression SourceRange
+               deriving (Show, Eq)
 
 data Expression = FloatLiteral Double SourceRange
                 | HexRGBLiteral String SourceRange
@@ -51,3 +53,4 @@ instance HasSourceRange FunctionCall where
 
 instance HasSourceRange Statement where
   rangeInSource (FunctionCallStatement fnCall) = rangeInSource fnCall
+  rangeInSource (FunctionDefStatement _ _ r) = r

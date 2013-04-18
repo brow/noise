@@ -13,6 +13,6 @@ nounsDef = Token.LanguageDef
   , identLetter = alphaNum <|> char '_'
   , opStart = parserZero
   , opLetter = parserZero
-  , reservedNames = []
+  , reservedNames = ["let"]
   , reservedOpNames = []
   , caseSensitive = True }

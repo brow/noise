@@ -8,6 +8,7 @@ module Text.Nouns.Parser.Token
 , commaSeparated
 , dot
 , symbol
+, reserved
 ) where
 
 import qualified Text.Parsec.Token as T
@@ -49,6 +50,9 @@ dot = T.dot tokenParser
 
 symbol :: String -> Parser String
 symbol = T.symbol tokenParser
+
+reserved :: String -> Parser ()
+reserved = T.reserved tokenParser
 
 lexeme :: Parser a -> Parser a
 lexeme = T.lexeme tokenParser
