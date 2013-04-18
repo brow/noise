@@ -4,7 +4,7 @@ module Text.Nouns.Parser
 , ParseError
 ) where
 
-import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof)
+import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof, option)
 import Text.Parsec.Prim (getPosition, try, (<|>))
 import qualified Text.Parsec.Prim
 import qualified Text.Parsec.String
@@ -91,7 +91,7 @@ functionCall :: Parser AST.FunctionCall
 functionCall = do
   start <- getPosition
   name <- qualifiedIdentifier
-  args <- Token.parens (Token.commaSeparated argument)
+  args <- option [] $ Token.parens (Token.commaSeparated argument)
   end <- getPosition
   return $ AST.FunctionCall name args (start, end)
 

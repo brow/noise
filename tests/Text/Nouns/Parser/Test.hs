@@ -33,10 +33,10 @@ arg val (loc,len) = AST.PositionalArgument $ AST.FloatLiteral val argRange
 range :: Int -> Int -> SourceRange
 range = oneLineRange ""
 
-test_missing_parens =
+test_unexpected_eof =
   assertParseErrorMessage
-    "foo"
-    "Unexpected end of input. Expecting letter or digit, \"_\", \".\" or \"(\"."
+    "foo("
+    "Unexpected end of input. Expecting identifier, \"#\", float, integer, literal string or \")\"."
 
 test_function_no_args =
   assertParseFnCall
@@ -92,6 +92,14 @@ test_nested_function_call =
             []
             (range 5 5)))]
       (range 1 10))
+
+test_function_call_sans_parens =
+  assertParseFnCall
+    "red"
+    (AST.FunctionCall
+      (AST.QualifiedIdentifier ["red"] (range 1 3))
+      []
+      (range 1 3))
 
 test_function_def =
   assertParse
