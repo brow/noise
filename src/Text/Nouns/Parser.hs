@@ -58,15 +58,30 @@ expression = try hexRGBLiteral <|>
 functionCallStatement :: Parser AST.Statement
 functionCallStatement = fmap AST.FunctionCallStatement functionCall
 
+argumentPrototype :: Parser AST.ArgumentPrototype
+argumentPrototype = do
+  start <- getPosition
+  identifier <- Token.identifier
+  end <- getPosition
+  return $ AST.RequiredArgumentPrototype identifier (start, end)
+
+functionPrototype :: Parser AST.FunctionPrototype
+functionPrototype = do
+  start <- getPosition
+  identifier <- qualifiedIdentifier
+  args <- option [] $ Token.parens (Token.commaSeparated argumentPrototype)
+  end <- getPosition
+  return $ AST.FunctionPrototype identifier args (start, end)
+
 functionDefStatement :: Parser AST.Statement
 functionDefStatement = do
   start <- getPosition
   Token.reserved "let"
-  name <- qualifiedIdentifier
+  prototype <- functionPrototype
   _ <- Token.symbol "="
   definition <- expression
   end <- getPosition
-  return $ AST.FunctionDefStatement name definition (start, end)
+  return $ AST.FunctionDefStatement prototype definition (start, end)
 
 statement :: Parser AST.Statement
 statement = try functionDefStatement <|>

@@ -106,7 +106,10 @@ test_function_def =
     "let red = #ff0000"
     (AST.SourceFile
       [AST.FunctionDefStatement
-        (AST.QualifiedIdentifier ["red"] (range 5 4))
+        (AST.FunctionPrototype
+          (AST.QualifiedIdentifier ["red"] (range 5 4))
+          []
+          (range 5 4))
         (AST.HexRGBLiteral "ff0000" (range 11 7))
         (range 1 17)]
       (range 1 17))

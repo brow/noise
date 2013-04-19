@@ -6,6 +6,8 @@ module Text.Nouns.Parser.AST
 , Argument(..)
 , Expression(..)
 , Statement(..)
+, FunctionPrototype(..)
+, ArgumentPrototype(..)
 ) where
 
 import Text.Nouns.SourceRange (SourceRange, HasSourceRange(..))
@@ -19,8 +21,12 @@ data QualifiedIdentifier = QualifiedIdentifier [Identifier] SourceRange deriving
 type Identifier = String
 
 data Statement = FunctionCallStatement FunctionCall
-               | FunctionDefStatement QualifiedIdentifier Expression SourceRange
+               | FunctionDefStatement FunctionPrototype Expression SourceRange
                deriving (Show, Eq)
+
+data FunctionPrototype = FunctionPrototype QualifiedIdentifier [ArgumentPrototype] SourceRange deriving (Show, Eq)
+
+data ArgumentPrototype = RequiredArgumentPrototype Identifier SourceRange deriving (Show, Eq)
 
 data Expression = FloatLiteral Double SourceRange
                 | HexRGBLiteral String SourceRange

@@ -64,10 +64,11 @@ compileStatement (CompileState defs elems) (AST.FunctionCallStatement fnCall) = 
   case value of
     F.ElementValue element -> Right $ CompileState defs (elems ++ [element])
     _                      -> Left $ StatementReturnTypeError fnCall
-compileStatement (CompileState defs elems) (AST.FunctionDefStatement identifier expression _) = do
-  value <- compileExp defs expression
+compileStatement (CompileState defs elems) (AST.FunctionDefStatement prototype definition _) = do
+  value <- compileExp defs definition
   return $ CompileState (Map.insert identComponents (return value) defs) elems
   where (AST.QualifiedIdentifier identComponents _) = identifier
+        (AST.FunctionPrototype identifier _ _) = prototype
 
 compileFunctionCall :: Definitions -> AST.FunctionCall -> Compiled F.Value
 compileFunctionCall defs functionCall@(AST.FunctionCall identifier args _) = do

@@ -203,7 +203,10 @@ test_define_function =
     (D.Document [])
     (AST.SourceFile
       [AST.FunctionDefStatement
-        (AST.QualifiedIdentifier ["red"] zeroRange)
+        (AST.FunctionPrototype
+          (AST.QualifiedIdentifier ["red"] zeroRange)
+          []
+          zeroRange)
         (AST.HexRGBLiteral "aa0000" zeroRange)
         zeroRange]
       zeroRange)
@@ -214,7 +217,10 @@ test_call_defined_function =
       [D.Circle 0 0 10 $ D.ColorPaint $ D.Color "000000"])
     (AST.SourceFile
       [ AST.FunctionDefStatement
-          (AST.QualifiedIdentifier ["circle"] zeroRange)
+          (AST.FunctionPrototype
+            (AST.QualifiedIdentifier ["circle"] zeroRange)
+            []
+            zeroRange)
           (AST.FunctionCallExp
             (AST.FunctionCall
               (AST.QualifiedIdentifier ["shape","circle"] zeroRange)
