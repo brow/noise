@@ -1,30 +1,25 @@
 module Text.Nouns.Compiler.Builtin
-( functionWithName
+( definitions
 ) where
 
 import Control.Applicative
+import qualified Data.Map as Map
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
 import Text.Nouns.Compiler.Function (Function, requireArg, acceptArg)
 
-functionWithName :: [String] -> Maybe (Function F.Value)
-functionWithName name = case name of
-  "shape" : x -> case x of
-    ["rectangle"]   -> Just rectangle
-    ["circle"]      -> Just circle
-    _               -> Nothing
-  "color" : x -> case x of
-    ["red"]         -> Just (color "ff0000")
-    ["green"]       -> Just (color "00ff00")
-    ["blue"]        -> Just (color "0000ff")
-    _               -> Nothing
-  "gradient" : x -> case x of
-    ["vertical"]    -> Just verticalGradient
-    ["horizontal"]  -> Just horizontalGradient
-    ["radial"]      -> Just radialGradient
-    _               -> Nothing
-  ["image"]         -> Just image
-  _                 -> Nothing
+definitions :: Map.Map [String] (Function F.Value)
+definitions = Map.fromList
+  [ (["shape","rectangle"],     rectangle)
+  , (["shape","circle"],        circle)
+  , (["color","red"],           color "ff0000")
+  , (["color","green"],         color "00ff00")
+  , (["color","blue"],          color "0000ff")
+  , (["gradient","vertical"],   verticalGradient)
+  , (["gradient","horizontal"], horizontalGradient)
+  , (["gradient","radial"],    radialGradient)
+  , (["image"],                 image)
+  ]
 
 rectangle :: Function F.Value
 rectangle = fmap F.ElementValue $ D.Rectangle

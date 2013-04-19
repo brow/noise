@@ -20,9 +20,11 @@ sourceFileWithFnCall fnCall =
 
 assertFnCallCompilesTo :: D.Element -> AST.FunctionCall -> Assertion
 assertFnCallCompilesTo element fnCall =
-  assertEqual
-    (Right $ D.Document [element])
-    (Compiler.compile $ sourceFileWithFnCall fnCall)
+  assertCompilesTo (D.Document [element]) (sourceFileWithFnCall fnCall)
+
+assertCompilesTo :: D.Document -> AST.SourceFile -> Assertion
+assertCompilesTo document source =
+  assertEqual (Right document) (Compiler.compile source)
 
 assertFnCallFails :: Compiler.CompileError -> AST.FunctionCall -> Assertion
 assertFnCallFails err fnCall =
@@ -188,6 +190,44 @@ test_compile_fill_gradient_fn =
       zeroRange)
   where fillArg = arg $ funcCall "gradient.vertical" [fg, bg]
         (fg, bg) = ("#ff0000", "#00ff00")
+
+test_compile_empty =
+  assertCompilesTo
+    (D.Document [])
+    (AST.SourceFile
+      []
+      zeroRange)
+
+test_define_function =
+  assertCompilesTo
+    (D.Document [])
+    (AST.SourceFile
+      [AST.FunctionDefStatement
+        (AST.QualifiedIdentifier ["red"] zeroRange)
+        (AST.HexRGBLiteral "aa0000" zeroRange)
+        zeroRange]
+      zeroRange)
+
+test_call_defined_function =
+  assertCompilesTo
+    (D.Document
+      [D.Circle 0 0 10 $ D.ColorPaint $ D.Color "000000"])
+    (AST.SourceFile
+      [ AST.FunctionDefStatement
+          (AST.QualifiedIdentifier ["circle"] zeroRange)
+          (AST.FunctionCallExp
+            (AST.FunctionCall
+              (AST.QualifiedIdentifier ["shape","circle"] zeroRange)
+              (args [0, 0, 10 :: Int])
+              zeroRange))
+          zeroRange
+      , AST.FunctionCallStatement
+         (AST.FunctionCall
+          (AST.QualifiedIdentifier ["circle"] zeroRange)
+          []
+          zeroRange)
+      ]
+      zeroRange)
 
 test_undefined_fn_message =
   assertFnCallFailsWithErrorMessage
