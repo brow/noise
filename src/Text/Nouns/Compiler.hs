@@ -16,30 +16,32 @@ import qualified Text.Nouns.Error as Error
 import Text.Nouns.SourceRange (HasSourceRange, rangeInSource)
 import Text.Nouns.Compiler.Function (FunctionError(..))
 
-data CompileError = FunctionCallError AST.FunctionCall FunctionError
+data CompileError = FunctionCallError AST.QualifiedIdentifier FunctionError
                   | UndefinedFunctionError AST.QualifiedIdentifier
-                  | StatementReturnTypeError AST.FunctionCall
+                  | ExpressionStatementTypeError AST.Expression
                   deriving (Show, Eq)
 
 instance HasSourceRange CompileError where
   rangeInSource (FunctionCallError fnCall _) = rangeInSource fnCall
   rangeInSource (UndefinedFunctionError identifier) = rangeInSource identifier
-  rangeInSource (StatementReturnTypeError fnCall) = rangeInSource fnCall
+  rangeInSource (ExpressionStatementTypeError fnCall) = rangeInSource fnCall
 
 instance Error.Error CompileError where
-  message compileError = case compileError of
-    UndefinedFunctionError identifier ->
-      "Undefined function \"" ++ showDotSyntax identifier ++ "\"."
-    StatementReturnTypeError (AST.FunctionCall identifier _ _) ->
-      "Function \"" ++ showDotSyntax identifier ++ "\" does not return an element."
-    FunctionCallError (AST.FunctionCall identifier _ _) (MissingArgumentError keyword) ->
-      "Function \"" ++ showDotSyntax identifier ++ "\" requires argument \"" ++ keyword ++ "\"."
-    FunctionCallError (AST.FunctionCall identifier _ _) (ArgumentTypeError keyword) ->
-      "Argument \"" ++ keyword ++ "\" to function \"" ++ showDotSyntax identifier ++ "\" has incorrect type."
-    FunctionCallError (AST.FunctionCall identifier _ _) TooManyArgumentsError ->
-      "Too many arguments to function \"" ++ showDotSyntax identifier ++ "\"."
-    where showDotSyntax (AST.QualifiedIdentifier components _) =
-            List.intercalate "." components
+  message compileError =
+    let showDotSyntax (AST.QualifiedIdentifier path _) = List.intercalate "." path in
+    case compileError of
+      UndefinedFunctionError identifier ->
+        "Undefined function \"" ++ showDotSyntax identifier ++ "\"."
+      ExpressionStatementTypeError _ ->
+        "Top-level expression is not an element."
+      FunctionCallError identifier functionError -> case functionError of
+        MissingArgumentError keyword ->
+          "Function \"" ++ fnName ++ "\" requires argument \"" ++ keyword ++ "\"."
+        ArgumentTypeError keyword ->
+          "Argument \"" ++ keyword ++ "\" to function \"" ++ fnName ++ "\" has incorrect type."
+        TooManyArgumentsError ->
+          "Too many arguments to function \"" ++ fnName ++ "\"."
+        where fnName = showDotSyntax identifier
 
 type Compiled a = Either CompileError a
 
@@ -47,8 +49,8 @@ type Definitions = Map.Map [AST.Identifier] (F.Function F.Value)
 
 data CompileState = CompileState Definitions [D.Element]
 
-emptyCompileState :: CompileState
-emptyCompileState = CompileState Builtin.definitions []
+initialCompileState :: CompileState
+initialCompileState = CompileState Builtin.definitions []
 
 compile :: AST.SourceFile -> Compiled D.Document
 compile (AST.SourceFile statements _) = do
@@ -56,26 +58,29 @@ compile (AST.SourceFile statements _) = do
   return $ D.Document elems
 
 compileStatements :: [AST.Statement] -> Compiled CompileState
-compileStatements = Monad.foldM compileStatement emptyCompileState
+compileStatements = Monad.foldM compileStatement initialCompileState
 
 compileStatement :: CompileState -> AST.Statement -> Compiled CompileState
-compileStatement (CompileState defs elems) (AST.FunctionCallStatement fnCall) = do
-  value <- compileFunctionCall defs fnCall
+compileStatement (CompileState defs elems) (AST.ExpressionStatement expression) = do
+  value <- evaluate defs expression
   case value of
     F.ElementValue element -> Right $ CompileState defs (elems ++ [element])
-    _                      -> Left $ StatementReturnTypeError fnCall
+    _                      -> Left $ ExpressionStatementTypeError expression
 compileStatement (CompileState defs elems) (AST.FunctionDefStatement prototype definition _) = do
-  value <- compileExp defs definition
+  value <- evaluate defs definition
   return $ CompileState (Map.insert identComponents (return value) defs) elems
   where (AST.QualifiedIdentifier identComponents _) = identifier
         (AST.FunctionPrototype identifier _ _) = prototype
 
-compileFunctionCall :: Definitions -> AST.FunctionCall -> Compiled F.Value
-compileFunctionCall defs functionCall@(AST.FunctionCall identifier args _) = do
+evaluate :: Definitions -> AST.Expression -> Compiled F.Value
+evaluate _ (AST.FloatLiteral x _) = return (F.FloatValue x)
+evaluate _ (AST.HexRGBLiteral x _) = return (F.RGBValue x)
+evaluate _ (AST.StringLiteral x _) = return (F.StringValue x)
+evaluate defs (AST.FunctionCall identifier args _) = do
   function <- lookUpFunction defs identifier
-  (posArgs, kwArgs) <- compileArguments defs args
+  (posArgs, kwArgs) <- evaluateArguments defs args
   case F.call function posArgs kwArgs of
-    Left callError -> Left (FunctionCallError functionCall callError)
+    Left callError -> Left (FunctionCallError identifier callError)
     Right value    -> Right value
 
 lookUpFunction :: Definitions -> AST.QualifiedIdentifier -> Compiled (F.Function F.Value)
@@ -84,19 +89,14 @@ lookUpFunction defs identifier@(AST.QualifiedIdentifier path _) =
     Just fn -> Right fn
     Nothing -> Left (UndefinedFunctionError identifier)
 
-compileArguments :: Definitions -> [AST.Argument] -> Compiled ([F.Value], [(String, F.Value)])
-compileArguments defs = fmap partitionEithers . mapM (compileArgument defs)
+evaluateArguments :: Definitions -> [AST.Argument] -> Compiled ([F.Value], [(String, F.Value)])
+evaluateArguments defs = fmap partitionEithers . mapM (evaluateArgument defs)
 
-compileArgument :: Definitions -> AST.Argument -> Compiled (Either F.Value (String, F.Value))
-compileArgument defs (AST.PositionalArgument valueExp) = do
-  value <- compileExp defs valueExp
+evaluateArgument :: Definitions -> AST.Argument -> Compiled (Either F.Value (String, F.Value))
+evaluateArgument defs (AST.PositionalArgument valueExp) = do
+  value <- evaluate defs valueExp
   return $ Left value
-compileArgument defs (AST.KeywordArgument keyword valueExp _) = do
-  value <- compileExp defs valueExp
+evaluateArgument defs (AST.KeywordArgument keyword valueExp _) = do
+  value <- evaluate defs valueExp
   return $ Right (keyword, value)
 
-compileExp :: Definitions -> AST.Expression -> Compiled F.Value
-compileExp _ (AST.FloatLiteral x _) = return (F.FloatValue x)
-compileExp _ (AST.HexRGBLiteral x _) = return (F.RGBValue x)
-compileExp _ (AST.StringLiteral x _) = return (F.StringValue x)
-compileExp defs (AST.FunctionCallExp fnCall) = compileFunctionCall defs fnCall

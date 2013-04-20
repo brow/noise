@@ -10,11 +10,11 @@ import Text.Nouns.SourceRange (SourceRange, rangeInSource, oneLineRange)
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
-assertParseFnCall :: String -> AST.FunctionCall -> Assertion
-assertParseFnCall source fnCallAST = assertParse source $
+assertParseFnCall :: String -> AST.Expression -> Assertion
+assertParseFnCall source fnCall = assertParse source $
   AST.SourceFile
-    [AST.FunctionCallStatement fnCallAST]
-    (rangeInSource fnCallAST)
+    [AST.ExpressionStatement fnCall]
+    (rangeInSource fnCall)
 
 assertParse :: String -> AST.SourceFile -> Assertion
 assertParse source expectedAST = case Parser.parse source of
@@ -86,11 +86,10 @@ test_nested_function_call =
     (AST.FunctionCall
       (AST.QualifiedIdentifier ["foo"] (range 1 3))
       [AST.PositionalArgument
-        (AST.FunctionCallExp
-          (AST.FunctionCall
-            (AST.QualifiedIdentifier ["bar"] (range 5 3))
-            []
-            (range 5 5)))]
+        (AST.FunctionCall
+          (AST.QualifiedIdentifier ["bar"] (range 5 3))
+          []
+          (range 5 5))]
       (range 1 10))
 
 test_function_call_sans_parens =
@@ -123,15 +122,13 @@ test_function_def_with_args =
           (AST.QualifiedIdentifier ["f"] (range 5 1))
           [AST.RequiredArgumentPrototype "c" (range 7 1)]
           (range 5 5))
-        (AST.FunctionCallExp
-          (AST.FunctionCall
-            (AST.QualifiedIdentifier ["g"] (range 12 1))
-            [AST.PositionalArgument
-              (AST.FunctionCallExp
-                (AST.FunctionCall
-                  (AST.QualifiedIdentifier ["c"] (range 14 1))
-                  []
-                  (range 14 1)))]
-              (range 12 4)))
+        (AST.FunctionCall
+          (AST.QualifiedIdentifier ["g"] (range 12 1))
+          [AST.PositionalArgument
+            (AST.FunctionCall
+              (AST.QualifiedIdentifier ["c"] (range 14 1))
+              []
+              (range 14 1))]
+            (range 12 4))
         (range 1 15)]
       (range 1 15))

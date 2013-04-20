@@ -46,17 +46,22 @@ stringLiteral = do
   end <- getPosition
   return $ AST.StringLiteral string (start, end)
 
-functionCallExp :: Parser AST.Expression
-functionCallExp = fmap AST.FunctionCallExp functionCall
+functionCall :: Parser AST.Expression
+functionCall = do
+  start <- getPosition
+  name <- qualifiedIdentifier
+  args <- option [] $ Token.parens (Token.commaSeparated argument)
+  end <- getPosition
+  return $ AST.FunctionCall name args (start, end)
 
 expression :: Parser AST.Expression
 expression = try hexRGBLiteral <|>
              try floatLiteral <|>
              try stringLiteral <|>
-             functionCallExp
+             functionCall
 
-functionCallStatement :: Parser AST.Statement
-functionCallStatement = fmap AST.FunctionCallStatement functionCall
+expressionStatement :: Parser AST.Statement
+expressionStatement = fmap AST.ExpressionStatement expression
 
 argumentPrototype :: Parser AST.ArgumentPrototype
 argumentPrototype = do
@@ -85,7 +90,7 @@ functionDefStatement = do
 
 statement :: Parser AST.Statement
 statement = try functionDefStatement <|>
-            functionCallStatement
+            expressionStatement
 
 keywordArgument :: Parser AST.Argument
 keywordArgument = do
@@ -101,14 +106,6 @@ positionalArgument = fmap AST.PositionalArgument expression
 
 argument :: Parser AST.Argument
 argument = try keywordArgument <|> positionalArgument
-
-functionCall :: Parser AST.FunctionCall
-functionCall = do
-  start <- getPosition
-  name <- qualifiedIdentifier
-  args <- option [] $ Token.parens (Token.commaSeparated argument)
-  end <- getPosition
-  return $ AST.FunctionCall name args (start, end)
 
 sourceFile :: Parser AST.SourceFile
 sourceFile = do
