@@ -113,3 +113,25 @@ test_function_def =
         (AST.HexRGBLiteral "ff0000" (range 11 7))
         (range 1 17)]
       (range 1 17))
+
+test_function_def_with_args =
+  assertParse
+    "let f(c) = g(c)"
+    (AST.SourceFile
+      [AST.FunctionDefStatement
+        (AST.FunctionPrototype
+          (AST.QualifiedIdentifier ["f"] (range 5 1))
+          [AST.RequiredArgumentPrototype "c" (range 7 1)]
+          (range 5 5))
+        (AST.FunctionCallExp
+          (AST.FunctionCall
+            (AST.QualifiedIdentifier ["g"] (range 12 1))
+            [AST.PositionalArgument
+              (AST.FunctionCallExp
+                (AST.FunctionCall
+                  (AST.QualifiedIdentifier ["c"] (range 14 1))
+                  []
+                  (range 14 1)))]
+              (range 12 4)))
+        (range 1 15)]
+      (range 1 15))
