@@ -66,7 +66,7 @@ compileStatement (CompileState defs elems) (AST.ExpressionStatement expression) 
   case value of
     F.ElementValue element -> Right $ CompileState defs (elems ++ [element])
     _                      -> Left $ ExpressionStatementTypeError expression
-compileStatement (CompileState defs elems) (AST.FunctionDefStatement prototype definition _) = do
+compileStatement (CompileState defs elems) (AST.DefinitionStatement prototype definition _) = do
   value <- evaluate defs definition
   return $ CompileState (Map.insert identComponents (return value) defs) elems
   where (AST.QualifiedIdentifier identComponents _) = identifier

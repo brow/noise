@@ -104,7 +104,7 @@ test_function_def =
   assertParse
     "let red = #ff0000"
     (AST.SourceFile
-      [AST.FunctionDefStatement
+      [AST.DefinitionStatement
         (AST.FunctionPrototype
           (AST.QualifiedIdentifier ["red"] (range 5 4))
           []
@@ -117,7 +117,7 @@ test_function_def_with_args =
   assertParse
     "let f(c) = g(c)"
     (AST.SourceFile
-      [AST.FunctionDefStatement
+      [AST.DefinitionStatement
         (AST.FunctionPrototype
           (AST.QualifiedIdentifier ["f"] (range 5 1))
           [AST.RequiredArgumentPrototype "c" (range 7 1)]

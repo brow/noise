@@ -86,7 +86,7 @@ functionDefStatement = do
   _ <- Token.symbol "="
   definition <- expression
   end <- getPosition
-  return $ AST.FunctionDefStatement prototype definition (start, end)
+  return $ AST.DefinitionStatement prototype definition (start, end)
 
 statement :: Parser AST.Statement
 statement = try functionDefStatement <|>

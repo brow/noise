@@ -18,7 +18,7 @@ data QualifiedIdentifier = QualifiedIdentifier [Identifier] SourceRange deriving
 type Identifier = String
 
 data Statement = ExpressionStatement Expression
-               | FunctionDefStatement FunctionPrototype Expression SourceRange
+               | DefinitionStatement FunctionPrototype Expression SourceRange
                deriving (Show, Eq)
 
 data FunctionPrototype = FunctionPrototype QualifiedIdentifier [ArgumentPrototype] SourceRange deriving (Show, Eq)
@@ -53,4 +53,4 @@ instance HasSourceRange Argument where
 
 instance HasSourceRange Statement where
   rangeInSource (ExpressionStatement expression) = rangeInSource expression
-  rangeInSource (FunctionDefStatement _ _ r) = r
+  rangeInSource (DefinitionStatement _ _ r) = r

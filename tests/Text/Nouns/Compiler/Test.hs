@@ -209,7 +209,7 @@ test_define_function =
   assertCompilesTo
     (D.Document [])
     (AST.SourceFile
-      [AST.FunctionDefStatement
+      [AST.DefinitionStatement
         (AST.FunctionPrototype
           (AST.QualifiedIdentifier ["red"] zeroRange)
           []
@@ -223,7 +223,7 @@ test_call_defined_function =
     (D.Document
       [D.Circle 0 0 10 $ D.ColorPaint $ D.Color "000000"])
     (AST.SourceFile
-      [ AST.FunctionDefStatement
+      [ AST.DefinitionStatement
           (AST.FunctionPrototype
             (AST.QualifiedIdentifier ["circle"] zeroRange)
             []
