@@ -54,3 +54,6 @@ instance HasSourceRange Argument where
 instance HasSourceRange Statement where
   rangeInSource (ExpressionStatement expression) = rangeInSource expression
   rangeInSource (DefinitionStatement _ _ r) = r
+
+instance HasSourceRange FunctionPrototype where
+  rangeInSource (FunctionPrototype _ _ r) = r
