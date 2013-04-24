@@ -6,6 +6,7 @@ module Text.Nouns.Compiler.Test where
 import Test.Framework
 import Data.String.QQ (s)
 import Assertion
+import Text.Nouns.SourceRange (oneLineRange)
 import qualified Text.Nouns.Compiler.Document as D
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
@@ -35,6 +36,10 @@ test_missing_argument = assertError
 text_excess_argument = assertError
   "Too many arguments to function \"color.red\"."
   "color.red(#ff0000)"
+
+test_positional_arg_after_keyword_arg = assertErrorAt (oneLineRange "" 34 7)
+  "Positional argument follows a keyword argument."
+  "gradient.horizontal(from:#abcdef,#123456)"
 
 test_define_function_with_0_args = assertOutputElement
   (D.Circle 0 0 15 $ D.ColorPaint $ D.Color "ffff00")

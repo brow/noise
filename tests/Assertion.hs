@@ -2,6 +2,7 @@
 
 module Assertion
 ( assertError
+, assertErrorAt
 , assertOutput
 , assertOutputElement
 ) where
@@ -12,6 +13,7 @@ import qualified Text.Nouns.Error as Error
 import qualified Text.Nouns.Parser as Parser
 import qualified Text.Nouns.Compiler as Compiler
 import qualified Text.Nouns.Compiler.Document as D
+import qualified Text.Nouns.SourceRange as SourceRange
 
 data CompileResult = Output D.Document
                    | CompileError Compiler.CompileError
@@ -25,11 +27,21 @@ compile src = case Parser.parse src of
     Right doc -> Output doc
 
 assertError :: String -> String -> Assertion
-assertError msg src = case compile src of
-  ParseError err   -> checkMsg err
-  CompileError err -> checkMsg err
+assertError = assertErrorRangeAndMessage Nothing
+
+assertErrorAt :: SourceRange.SourceRange -> String -> String -> Assertion
+assertErrorAt range = assertErrorRangeAndMessage (Just range)
+
+assertErrorRangeAndMessage :: Maybe SourceRange.SourceRange -> String -> String -> Assertion
+assertErrorRangeAndMessage range msg src = case compile src of
+  ParseError err   -> check err
+  CompileError err -> check err
   _                -> assertFailure "no error"
-  where checkMsg err = assertEqual msg (Error.message err)
+  where check err = do
+          assertEqual msg (Error.message err)
+          case range of
+            Just r -> assertEqual r (SourceRange.rangeInSource err)
+            Nothing -> return ()
 
 assertOutput :: D.Document -> String -> Assertion
 assertOutput expected src = case compile src of

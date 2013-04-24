@@ -5,7 +5,7 @@ module Text.Nouns.Parser
 ) where
 
 import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof, option)
-import Text.Parsec.Prim (getPosition, try, (<|>))
+import Text.Parsec.Prim (getPosition, try, (<|>), (<?>))
 import qualified Text.Parsec.Prim
 import qualified Text.Parsec.String
 import qualified Text.Nouns.Parser.Token as Token
@@ -105,7 +105,9 @@ positionalArgument :: Parser AST.Argument
 positionalArgument = fmap AST.PositionalArgument expression
 
 argument :: Parser AST.Argument
-argument = try keywordArgument <|> positionalArgument
+argument = try keywordArgument
+           <|> positionalArgument
+           <?> "argument"
 
 sourceFile :: Parser AST.SourceFile
 sourceFile = do

@@ -9,5 +9,5 @@ import Assertion
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
 test_unexpected_eof = assertError
-  "Unexpected end of input. Expecting identifier, \"#\", float, integer, literal string or \")\"."
+  "Unexpected end of input. Expecting argument or \")\"."
   "foo("

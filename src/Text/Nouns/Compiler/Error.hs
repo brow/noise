@@ -17,6 +17,7 @@ data FunctionError = MissingArgumentError String
 data CompileError = FunctionCallError AST.QualifiedIdentifier FunctionError
                   | UndefinedFunctionError AST.QualifiedIdentifier
                   | ExpressionStatementTypeError AST.Expression
+                  | PositionalArgumentError AST.Argument
                   deriving (Show, Eq)
 
 instance HasSourceRange CompileError where
@@ -24,6 +25,7 @@ instance HasSourceRange CompileError where
   rangeInSource (FunctionCallError fnCall _) = rangeInSource fnCall
   rangeInSource (UndefinedFunctionError identifier) = rangeInSource identifier
   rangeInSource (ExpressionStatementTypeError fnCall) = rangeInSource fnCall
+  rangeInSource (PositionalArgumentError arg) = rangeInSource arg
 
 instance Error.Error CompileError where
   message compileError =
@@ -33,6 +35,8 @@ instance Error.Error CompileError where
         "Undefined function \"" ++ showDotSyntax identifier ++ "\"."
       ExpressionStatementTypeError _ ->
         "Top-level expression is not an element."
+      PositionalArgumentError _ ->
+        "Positional argument follows a keyword argument."
       FunctionCallError identifier functionError -> case functionError of
         MissingArgumentError keyword ->
           "Function \"" ++ fnName ++ "\" requires argument \"" ++ keyword ++ "\"."

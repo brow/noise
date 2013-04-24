@@ -72,7 +72,13 @@ lookUpFunction defs identifier@(AST.QualifiedIdentifier path _) =
     Nothing -> Left (UndefinedFunctionError identifier)
 
 evaluateArguments :: Definitions -> [AST.Argument] -> Compiled ([F.Value], [(String, F.Value)])
-evaluateArguments defs = fmap partitionEithers . mapM (evaluateArgument defs)
+evaluateArguments defs args =
+  let trailingPosArgs = dropWhile (not . isPosArg) $ dropWhile isPosArg args
+  in if null trailingPosArgs
+    then fmap partitionEithers $ mapM (evaluateArgument defs) args
+    else Left $ PositionalArgumentError (head trailingPosArgs)
+  where isPosArg (AST.PositionalArgument _) = True
+        isPosArg _ = False
 
 evaluateArgument :: Definitions -> AST.Argument -> Compiled (Either F.Value (String, F.Value))
 evaluateArgument defs (AST.PositionalArgument valueExp) = do
