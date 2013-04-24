@@ -68,6 +68,10 @@ text_excess_argument = assertError
   "Too many arguments to function \"color.red\"."
   "color.red(#ff0000)"
 
+test_unexpected_eof = assertError
+  "Unexpected end of input. Expecting identifier, \"#\", float, integer, literal string or \")\"."
+  "foo("
+
 test_shape_rectangle = assertOutputElement
   (D.Rectangle (-10) (-20) 30 40 5 $ D.ColorPaint $ D.Color "abcdef")
   [s|shape.rectangle(x: -10,
@@ -115,3 +119,13 @@ test_image = assertOutputElement
            width: 50,
            height: 50,
            file: "cat.jpeg")|]
+
+test_define_function_with_0_args = assertOutputElement
+  (D.Circle 0 0 15 $ D.ColorPaint $ D.Color "ffff00")
+  [s|let yellow = #ffff00
+     shape.circle(0, 0, 15, fill:yellow)|]
+
+test_define_function_with_many_args = assertOutputElement
+  (D.Circle 0 0 20 $ D.ColorPaint $ D.Color "abcdef")
+  [s|let circle(r, c) = shape.circle(0, 0,r,c)
+     circle(20, #abcdef)|]
