@@ -20,6 +20,7 @@ data CompileError = FunctionCallError AST.QualifiedIdentifier FunctionError
                   deriving (Show, Eq)
 
 instance HasSourceRange CompileError where
+  rangeInSource (FunctionCallError _ (CompileError err)) = rangeInSource err
   rangeInSource (FunctionCallError fnCall _) = rangeInSource fnCall
   rangeInSource (UndefinedFunctionError identifier) = rangeInSource identifier
   rangeInSource (ExpressionStatementTypeError fnCall) = rangeInSource fnCall
