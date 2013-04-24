@@ -6,11 +6,13 @@ module Text.Nouns.Compiler.Function
 , FunctionError(..)
 , requireArg
 , acceptArg
+, throw
 , call
 ) where
 
 import Control.Applicative
 import Control.Monad
+import Text.Nouns.Compiler.Error (FunctionError(..))
 import qualified Text.Nouns.Compiler.Document as D
 
 type Keyword = String
@@ -22,11 +24,6 @@ data Value = FloatValue Double
            | GradientValue D.Gradient
 
 data ArgStack = ArgStack [Value] [(Keyword,Value)]
-
-data FunctionError = MissingArgumentError Keyword
-                   | ArgumentTypeError Keyword
-                   | TooManyArgumentsError
-                   deriving (Show, Eq)
 
 data Result a = Success a ArgStack | Failure FunctionError
 
@@ -57,6 +54,9 @@ call function args kwargs = case result of
 
 class FromValue a where
   fromValue :: Value -> Maybe a
+
+instance FromValue Value where
+  fromValue = Just
 
 instance FromValue D.Number where
   fromValue (FloatValue x) = Just x
@@ -93,3 +93,6 @@ requireArg keyword = getArg keyword Nothing
 
 acceptArg :: (FromValue a) => Keyword -> a -> Function a
 acceptArg keyword default' = getArg keyword (Just default')
+
+throw :: FunctionError -> Function a
+throw err = Function $ \_ -> Failure err

@@ -1,47 +1,18 @@
-module Text.Nouns.Compiler ( compile
+module Text.Nouns.Compiler
+( compile
 , CompileError(..)
 , FunctionError(..)
 ) where
 
-import Control.Monad.Instances ()
 import Data.Either (partitionEithers)
+import Control.Monad
+import Control.Applicative
 import qualified Data.Map as Map
-import qualified Data.List as List
-import qualified Control.Monad as Monad
 import qualified Text.Nouns.Parser.AST as AST
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
 import qualified Text.Nouns.Compiler.Builtin as Builtin
-import qualified Text.Nouns.Error as Error
-import Text.Nouns.SourceRange (HasSourceRange, rangeInSource)
-import Text.Nouns.Compiler.Function (FunctionError(..))
-
-data CompileError = FunctionCallError AST.QualifiedIdentifier FunctionError
-                  | UndefinedFunctionError AST.QualifiedIdentifier
-                  | ExpressionStatementTypeError AST.Expression
-                  deriving (Show, Eq)
-
-instance HasSourceRange CompileError where
-  rangeInSource (FunctionCallError fnCall _) = rangeInSource fnCall
-  rangeInSource (UndefinedFunctionError identifier) = rangeInSource identifier
-  rangeInSource (ExpressionStatementTypeError fnCall) = rangeInSource fnCall
-
-instance Error.Error CompileError where
-  message compileError =
-    let showDotSyntax (AST.QualifiedIdentifier path _) = List.intercalate "." path in
-    case compileError of
-      UndefinedFunctionError identifier ->
-        "Undefined function \"" ++ showDotSyntax identifier ++ "\"."
-      ExpressionStatementTypeError _ ->
-        "Top-level expression is not an element."
-      FunctionCallError identifier functionError -> case functionError of
-        MissingArgumentError keyword ->
-          "Function \"" ++ fnName ++ "\" requires argument \"" ++ keyword ++ "\"."
-        ArgumentTypeError keyword ->
-          "Argument \"" ++ keyword ++ "\" to function \"" ++ fnName ++ "\" has incorrect type."
-        TooManyArgumentsError ->
-          "Too many arguments to function \"" ++ fnName ++ "\"."
-        where fnName = showDotSyntax identifier
+import Text.Nouns.Compiler.Error (CompileError(..), FunctionError(..))
 
 type Compiled a = Either CompileError a
 
@@ -58,7 +29,7 @@ compile (AST.SourceFile statements _) = do
   return $ D.Document elems
 
 compileStatements :: [AST.Statement] -> Compiled CompileState
-compileStatements = Monad.foldM compileStatement initialCompileState
+compileStatements = foldM compileStatement initialCompileState
 
 compileStatement :: CompileState -> AST.Statement -> Compiled CompileState
 compileStatement (CompileState defs elems) (AST.ExpressionStatement expression) = do
@@ -66,11 +37,22 @@ compileStatement (CompileState defs elems) (AST.ExpressionStatement expression) 
   case value of
     F.ElementValue element -> Right $ CompileState defs (elems ++ [element])
     _                      -> Left $ ExpressionStatementTypeError expression
-compileStatement (CompileState defs elems) (AST.DefinitionStatement prototype definition _) = do
-  value <- evaluate defs definition
-  return $ CompileState (Map.insert identComponents (return value) defs) elems
-  where (AST.QualifiedIdentifier identComponents _) = identifier
-        (AST.FunctionPrototype identifier _ _) = prototype
+compileStatement (CompileState defs elems) (AST.DefinitionStatement prototype expression _) =
+  return $ CompileState (Map.insert identifierPath newFunction defs) elems
+  where (AST.QualifiedIdentifier identifierPath _) = identifier
+        (AST.FunctionPrototype identifier argPrototypes _) = prototype
+        newFunction = compileFunctionDef defs argPrototypes expression
+
+compileFunctionDef :: Definitions -> [AST.ArgumentPrototype] -> AST.Expression -> F.Function F.Value
+compileFunctionDef defs argPrototypes expression = do
+  argValues <- map return <$> mapM F.requireArg argNames
+  let argDefs = Map.fromList $ zip (map return argNames) argValues
+  let localDefs = argDefs `Map.union` defs
+  case evaluate localDefs expression of
+    Left err    -> F.throw (F.CompileError err)
+    Right value -> return value
+  where
+    argNames = map (\(AST.RequiredArgumentPrototype name _) -> name) argPrototypes
 
 evaluate :: Definitions -> AST.Expression -> Compiled F.Value
 evaluate _ (AST.FloatLiteral x _) = return (F.FloatValue x)
@@ -99,4 +81,3 @@ evaluateArgument defs (AST.PositionalArgument valueExp) = do
 evaluateArgument defs (AST.KeywordArgument keyword valueExp _) = do
   value <- evaluate defs valueExp
   return $ Right (keyword, value)
-

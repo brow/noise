@@ -241,6 +241,36 @@ test_call_defined_function =
       ]
       zeroRange)
 
+test_call_defined_function_with_arg =
+  assertCompilesTo
+    (D.Document
+      [D.Circle 0 0 15 $ D.ColorPaint $ D.Color "000000"])
+    (AST.SourceFile
+      [ AST.DefinitionStatement
+          (AST.FunctionPrototype
+            (AST.QualifiedIdentifier ["circle"] zeroRange)
+            [AST.RequiredArgumentPrototype "r" zeroRange]
+            zeroRange)
+          (AST.FunctionCall
+            (AST.QualifiedIdentifier ["shape","circle"] zeroRange)
+            [ arg (0 :: Int)
+            , arg (0 :: Int)
+            , AST.PositionalArgument
+              (AST.FunctionCall
+                (AST.QualifiedIdentifier ["r"] zeroRange)
+                []
+                zeroRange)
+            ]
+            zeroRange)
+          zeroRange
+      , AST.ExpressionStatement
+          (AST.FunctionCall
+            (AST.QualifiedIdentifier ["circle"] zeroRange)
+            [arg (15 :: Int)]
+            zeroRange)
+      ]
+      zeroRange)
+
 test_undefined_fn_message =
   assertExpCompileErrorMessage
     "Undefined function \"foo\"."
