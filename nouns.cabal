@@ -37,4 +37,5 @@ test-suite test
     containers ==0.4.*,
     HTF ==0.10.*,
     HUnit ==1.2.*,
-    QuickCheck ==2.5.*
+    QuickCheck ==2.5.*,
+    string-qq ==0.0.*
