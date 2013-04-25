@@ -41,6 +41,14 @@ test_positional_arg_after_keyword_arg = assertErrorAt (oneLineRange "" 34 7)
   "Positional argument follows a keyword argument."
   "gradient.horizontal(from:#abcdef,#123456)"
 
+test_keyword_arg_duplicating_positional_arg = assertError
+  "Keyword argument \"from\" duplicates a positional argument."
+  "gradient.horizontal(#abcdef, from: #123456, to: #000000)"
+
+test_keyword_arg_duplicating_keyword_arg = assertError
+  "Duplicate keyword argument \"from\" in function call."
+  "gradient.horizontal(from: #abcdef, to: #123456, from: #000000)"
+
 test_duplicate_args_in_function_def = assertError
   "Duplicate argument \"x\" in function definition."
   "let fn(x,y,x) = color.red"

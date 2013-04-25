@@ -12,6 +12,7 @@ data FunctionError = MissingArgumentError String
                    | ArgumentTypeError String
                    | TooManyArgumentsError
                    | CompileError CompileError
+                   | RedundantKeywordArgError String
                    deriving (Show, Eq)
 
 data CompileError = FunctionCallError AST.QualifiedIdentifier FunctionError
@@ -19,21 +20,25 @@ data CompileError = FunctionCallError AST.QualifiedIdentifier FunctionError
                   | ExpressionStatementTypeError AST.Expression
                   | PositionalArgumentError AST.Argument
                   | DuplicatedArgumentPrototypeError AST.ArgumentPrototype
+                  | DuplicatedKeywordArgumentError AST.Argument
                   deriving (Show, Eq)
 
 instance HasSourceRange CompileError where
   rangeInSource err = case err of
-    FunctionCallError _ (CompileError err') -> rangeInSource err'
     DuplicatedArgumentPrototypeError arg -> rangeInSource arg
     ExpressionStatementTypeError fnCall -> rangeInSource fnCall
+    DuplicatedKeywordArgumentError arg -> rangeInSource arg
     UndefinedFunctionError identifier -> rangeInSource identifier
     PositionalArgumentError arg -> rangeInSource arg
+    FunctionCallError _ (CompileError err') -> rangeInSource err'
     FunctionCallError fnCall _ -> rangeInSource fnCall
 
 instance Error.Error CompileError where
   message err =
     let showDotSyntax (AST.QualifiedIdentifier path _) = List.intercalate "." path
-        showArgName (AST.RequiredArgumentPrototype name _) = name
+        showArgPrototypeName (AST.RequiredArgumentPrototype name _) = name
+        showArgName (AST.KeywordArgument keyword _ _) = keyword
+        showArgName _ = ""
     in case err of
       UndefinedFunctionError identifier ->
         "Undefined function \"" ++ showDotSyntax identifier ++ "\"."
@@ -42,8 +47,12 @@ instance Error.Error CompileError where
       PositionalArgumentError _ ->
         "Positional argument follows a keyword argument."
       DuplicatedArgumentPrototypeError arg ->
-        "Duplicate argument \"" ++ showArgName arg ++ "\" in function definition."
+        "Duplicate argument \"" ++ showArgPrototypeName arg ++ "\" in function definition."
+      DuplicatedKeywordArgumentError arg ->
+        "Duplicate keyword argument \"" ++ showArgName arg ++ "\" in function call."
       FunctionCallError identifier fnCallErr -> case fnCallErr of
+        RedundantKeywordArgError keyword ->
+          "Keyword argument \"" ++ keyword ++ "\" duplicates a positional argument."
         MissingArgumentError keyword ->
           "Function \"" ++ fnName ++ "\" requires argument \"" ++ keyword ++ "\"."
         ArgumentTypeError keyword ->

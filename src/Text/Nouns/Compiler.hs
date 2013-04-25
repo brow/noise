@@ -58,23 +58,20 @@ compileFunctionDef defs argNames expression = do
   where
 
 compileFunctionPrototype :: AST.FunctionPrototype -> Compiled (AST.IdentifierPath, [AST.Identifier])
-compileFunctionPrototype (AST.FunctionPrototype (AST.QualifiedIdentifier path _) argPrototypes _) =
-  case duplicateArg of
-    Just arg -> throw (DuplicatedArgumentPrototypeError arg)
-    Nothing  -> return (path, argNames)
-  where
-    argNames = [name | AST.RequiredArgumentPrototype name _ <- argPrototypes]
-    duplicateArg = firstDuplicateBy ((==) `on` argName) argPrototypes
-    argName (AST.RequiredArgumentPrototype n _) = n
+compileFunctionPrototype (AST.FunctionPrototype (AST.QualifiedIdentifier path _) args _)
+  | not $ null duplicateArgs = throw $ DuplicatedArgumentPrototypeError (head duplicateArgs)
+  | otherwise                = return (path, argNames)
+  where duplicateArgs = duplicatesBy ((==) `on` argName) args
+        argNames = [name | AST.RequiredArgumentPrototype name _ <- args]
+        argName (AST.RequiredArgumentPrototype n _) = n
 
-firstDuplicateBy :: (a -> a -> Bool) -> [a] -> Maybe a
-firstDuplicateBy cmp (x:xs) = case List.find (cmp x) xs of
-  Nothing -> firstDuplicateBy cmp xs
-  Just x' -> Just x'
-firstDuplicateBy _ [] = Nothing
+duplicatesBy :: (a -> a -> Bool) -> [a] -> [a]
+duplicatesBy _ [] = []
+duplicatesBy cmp (x:xs) =
+  filter (cmp x) xs ++ duplicatesBy cmp (List.deleteBy cmp x xs)
 
 evaluate :: Definitions -> AST.Expression -> Compiled F.Value
-evaluate _ (AST.FloatLiteral x _) = return (F.FloatValue x)
+evaluate _ (AST.FloatLiteral x _)  = return (F.FloatValue x)
 evaluate _ (AST.HexRGBLiteral x _) = return (F.RGBValue x)
 evaluate _ (AST.StringLiteral x _) = return (F.StringValue x)
 evaluate defs (AST.FunctionCall identifier args _) = do
@@ -91,16 +88,21 @@ lookUpFunction defs identifier@(AST.QualifiedIdentifier path _) =
     Nothing -> throw (UndefinedFunctionError identifier)
 
 evaluateArguments :: Definitions -> [AST.Argument] -> Compiled ([F.Value], [(String, F.Value)])
-evaluateArguments defs args =
-  let trailingPosArgs = dropWhile (not . isPosArg) $ dropWhile isPosArg args
-  in if null trailingPosArgs
-    then partitionEithers <$> mapM (evaluateArgument defs) args
-    else throw $ PositionalArgumentError (head trailingPosArgs)
-  where isPosArg (AST.PositionalArgument _) = True
+evaluateArguments defs args
+  | not $ null duplicateArgs   = throw $ DuplicatedKeywordArgumentError (head duplicateArgs)
+  | not $ null trailingPosArgs = throw $ PositionalArgumentError (head trailingPosArgs)
+  | otherwise                  = partitionEithers <$> mapM (evaluateArgument defs) args
+  where duplicateArgs = duplicatesBy ((==) `on` keyword) keywordArgs
+        keywordArgs = filter (not . isPosArg) args
+        keyword (AST.KeywordArgument k _ _) = k
+        keyword _ = ""
+        trailingPosArgs = dropWhile (not . isPosArg) $ dropWhile isPosArg args
+        isPosArg (AST.PositionalArgument _) = True
         isPosArg _ = False
 
 evaluateArgument :: Definitions -> AST.Argument -> Compiled (Either F.Value (String, F.Value))
-evaluateArgument defs (AST.PositionalArgument expression) =
-  Left <$> evaluate defs expression
-evaluateArgument defs (AST.KeywordArgument keyword expression _) =
-  Right . (,) keyword <$> evaluate defs expression
+evaluateArgument defs arg = case arg of
+  AST.PositionalArgument expression ->
+    Left <$> evaluate defs expression
+  AST.KeywordArgument keyword expression _ ->
+    Right . (,) keyword <$> evaluate defs expression

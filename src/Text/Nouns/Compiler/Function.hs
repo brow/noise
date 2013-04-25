@@ -78,15 +78,17 @@ instance FromValue D.IRI where
 getArg :: (FromValue a) => Keyword -> Maybe a -> Function a
 getArg keyword maybeDefault = Function $ \args -> case args of
   ArgStack (value:xs) kwargs -> case fromValue value of
-    Just x -> Success x (ArgStack xs kwargs)
-    Nothing -> Failure (ArgumentTypeError keyword)
-  ArgStack [] kwargs -> case lookup keyword kwargs of
+    Just x     -> case lookup keyword kwargs of
+      Nothing       -> Success x (ArgStack xs kwargs)
+      Just _        -> Failure (RedundantKeywordArgError keyword)
+    Nothing    -> Failure (ArgumentTypeError keyword)
+  ArgStack [] kwargs         -> case lookup keyword kwargs of
     Just value -> case fromValue value of
-      Just x -> Success x (ArgStack [] kwargs)
-      Nothing -> Failure (ArgumentTypeError keyword)
-    Nothing -> case maybeDefault of
+      Just x        -> Success x (ArgStack [] kwargs)
+      Nothing       -> Failure (ArgumentTypeError keyword)
+    Nothing    -> case maybeDefault of
       Just default' -> Success default' (ArgStack [] kwargs)
-      Nothing -> Failure (MissingArgumentError keyword)
+      Nothing       -> Failure (MissingArgumentError keyword)
 
 requireArg :: (FromValue a) => Keyword -> Function a
 requireArg keyword = getArg keyword Nothing
