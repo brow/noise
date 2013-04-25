@@ -4,10 +4,12 @@ module Text.Nouns.Compiler
 , FunctionError(..)
 ) where
 
+import Data.Function
 import Data.Either (partitionEithers)
 import Control.Monad
 import Control.Applicative
 import qualified Data.Map as Map
+import qualified Data.List as List
 import qualified Text.Nouns.Parser.AST as AST
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
@@ -16,7 +18,7 @@ import Text.Nouns.Compiler.Error (CompileError(..), FunctionError(..))
 
 type Compiled a = Either CompileError a
 
-type Definitions = Map.Map [AST.Identifier] (F.Function F.Value)
+type Definitions = Map.Map AST.IdentifierPath (F.Function F.Value)
 
 data CompileState = CompileState Definitions [D.Element]
 
@@ -40,14 +42,13 @@ compileStatement (CompileState defs elems) (AST.ExpressionStatement expression) 
   case value of
     F.ElementValue element -> return $ CompileState defs (elems ++ [element])
     _                      -> throw $ ExpressionStatementTypeError expression
-compileStatement (CompileState defs elems) (AST.DefinitionStatement prototype expression _) =
-  return $ CompileState (Map.insert identifierPath newFunction defs) elems
-  where (AST.QualifiedIdentifier identifierPath _) = identifier
-        (AST.FunctionPrototype identifier argPrototypes _) = prototype
-        newFunction = compileFunctionDef defs argPrototypes expression
+compileStatement (CompileState defs elems) (AST.DefinitionStatement fnPrototype expression _) = do
+  (functionPath, argNames) <- compileFunctionPrototype fnPrototype
+  let definition = compileFunctionDef defs argNames expression
+  return $ CompileState (Map.insert functionPath definition defs) elems
 
-compileFunctionDef :: Definitions -> [AST.ArgumentPrototype] -> AST.Expression -> F.Function F.Value
-compileFunctionDef defs argPrototypes expression = do
+compileFunctionDef :: Definitions -> [AST.Identifier] -> AST.Expression -> F.Function F.Value
+compileFunctionDef defs argNames expression = do
   argValues <- map return <$> mapM F.requireArg argNames
   let argDefs = Map.fromList $ zip (map return argNames) argValues
   let localDefs = argDefs `Map.union` defs
@@ -55,7 +56,22 @@ compileFunctionDef defs argPrototypes expression = do
     Left err    -> F.throw (F.CompileError err)
     Right value -> return value
   where
+
+compileFunctionPrototype :: AST.FunctionPrototype -> Compiled (AST.IdentifierPath, [AST.Identifier])
+compileFunctionPrototype (AST.FunctionPrototype (AST.QualifiedIdentifier path _) argPrototypes _) =
+  case duplicateArg of
+    Just arg -> throw (DuplicatedArgumentPrototypeError arg)
+    Nothing  -> return (path, argNames)
+  where
     argNames = [name | AST.RequiredArgumentPrototype name _ <- argPrototypes]
+    duplicateArg = firstDuplicateBy ((==) `on` argName) argPrototypes
+    argName (AST.RequiredArgumentPrototype n _) = n
+
+firstDuplicateBy :: (a -> a -> Bool) -> [a] -> Maybe a
+firstDuplicateBy cmp (x:xs) = case List.find (cmp x) xs of
+  Nothing -> firstDuplicateBy cmp xs
+  Just x' -> Just x'
+firstDuplicateBy _ [] = Nothing
 
 evaluate :: Definitions -> AST.Expression -> Compiled F.Value
 evaluate _ (AST.FloatLiteral x _) = return (F.FloatValue x)

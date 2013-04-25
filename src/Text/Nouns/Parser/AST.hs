@@ -2,6 +2,7 @@ module Text.Nouns.Parser.AST
 ( SourceFile(..)
 , QualifiedIdentifier(..)
 , Identifier
+, IdentifierPath
 , Argument(..)
 , Expression(..)
 , Statement(..)
@@ -13,9 +14,11 @@ import Text.Nouns.SourceRange (SourceRange, HasSourceRange(..))
 
 data SourceFile = SourceFile [Statement] SourceRange deriving (Show, Eq)
 
-data QualifiedIdentifier = QualifiedIdentifier [Identifier] SourceRange deriving (Show, Eq)
+data QualifiedIdentifier = QualifiedIdentifier IdentifierPath SourceRange deriving (Show, Eq)
 
 type Identifier = String
+
+type IdentifierPath = [Identifier]
 
 data Statement = ExpressionStatement Expression
                | DefinitionStatement FunctionPrototype Expression SourceRange
@@ -57,3 +60,6 @@ instance HasSourceRange Statement where
 
 instance HasSourceRange FunctionPrototype where
   rangeInSource (FunctionPrototype _ _ r) = r
+
+instance HasSourceRange ArgumentPrototype where
+  rangeInSource (RequiredArgumentPrototype _ r) = r

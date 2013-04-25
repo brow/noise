@@ -41,12 +41,22 @@ test_positional_arg_after_keyword_arg = assertErrorAt (oneLineRange "" 34 7)
   "Positional argument follows a keyword argument."
   "gradient.horizontal(from:#abcdef,#123456)"
 
+test_duplicate_args_in_function_def = assertError
+  "Duplicate argument \"x\" in function definition."
+  "let fn(x,y,x) = color.red"
+
 test_define_function_with_0_args = assertOutputElement
   (D.Circle 0 0 15 $ D.ColorPaint $ D.Color "ffff00")
-  [s|let yellow = #ffff00
-     shape.circle(0, 0, 15, fill:yellow)|]
+  [s|let color.yellow = #ffff00
+     shape.circle(0, 0, 15, fill:color.yellow)|]
 
 test_define_function_with_many_args = assertOutputElement
   (D.Circle 0 0 20 $ D.ColorPaint $ D.Color "abcdef")
   [s|let circle(r, c) = shape.circle(0, 0,r,c)
      circle(20, #abcdef)|]
+
+test_argument_shadows_function = assertOutputElement
+  (D.Circle 1 2 3 $ D.ColorPaint $ D.Color "123456")
+  [s|let x = #abcdef
+     let f(x) = x
+     shape.circle(1, 2, 3, f(#123456))|]

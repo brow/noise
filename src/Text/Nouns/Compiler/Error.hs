@@ -18,32 +18,38 @@ data CompileError = FunctionCallError AST.QualifiedIdentifier FunctionError
                   | UndefinedFunctionError AST.QualifiedIdentifier
                   | ExpressionStatementTypeError AST.Expression
                   | PositionalArgumentError AST.Argument
+                  | DuplicatedArgumentPrototypeError AST.ArgumentPrototype
                   deriving (Show, Eq)
 
 instance HasSourceRange CompileError where
-  rangeInSource (FunctionCallError _ (CompileError err)) = rangeInSource err
-  rangeInSource (FunctionCallError fnCall _) = rangeInSource fnCall
-  rangeInSource (UndefinedFunctionError identifier) = rangeInSource identifier
-  rangeInSource (ExpressionStatementTypeError fnCall) = rangeInSource fnCall
-  rangeInSource (PositionalArgumentError arg) = rangeInSource arg
+  rangeInSource err = case err of
+    FunctionCallError _ (CompileError err') -> rangeInSource err'
+    DuplicatedArgumentPrototypeError arg -> rangeInSource arg
+    ExpressionStatementTypeError fnCall -> rangeInSource fnCall
+    UndefinedFunctionError identifier -> rangeInSource identifier
+    PositionalArgumentError arg -> rangeInSource arg
+    FunctionCallError fnCall _ -> rangeInSource fnCall
 
 instance Error.Error CompileError where
-  message compileError =
-    let showDotSyntax (AST.QualifiedIdentifier path _) = List.intercalate "." path in
-    case compileError of
+  message err =
+    let showDotSyntax (AST.QualifiedIdentifier path _) = List.intercalate "." path
+        showArgName (AST.RequiredArgumentPrototype name _) = name
+    in case err of
       UndefinedFunctionError identifier ->
         "Undefined function \"" ++ showDotSyntax identifier ++ "\"."
       ExpressionStatementTypeError _ ->
         "Top-level expression is not an element."
       PositionalArgumentError _ ->
         "Positional argument follows a keyword argument."
-      FunctionCallError identifier functionError -> case functionError of
+      DuplicatedArgumentPrototypeError arg ->
+        "Duplicate argument \"" ++ showArgName arg ++ "\" in function definition."
+      FunctionCallError identifier fnCallErr -> case fnCallErr of
         MissingArgumentError keyword ->
           "Function \"" ++ fnName ++ "\" requires argument \"" ++ keyword ++ "\"."
         ArgumentTypeError keyword ->
           "Argument \"" ++ keyword ++ "\" to function \"" ++ fnName ++ "\" has incorrect type."
         TooManyArgumentsError ->
           "Too many arguments to function \"" ++ fnName ++ "\"."
-        CompileError err ->
-          Error.message err
+        CompileError err' ->
+          Error.message err'
         where fnName = showDotSyntax identifier
