@@ -52,7 +52,7 @@ compileFunctionDef defs argPrototypes expression = do
     Left err    -> F.throw (F.CompileError err)
     Right value -> return value
   where
-    argNames = map (\(AST.RequiredArgumentPrototype name _) -> name) argPrototypes
+    argNames = [name | AST.RequiredArgumentPrototype name _ <- argPrototypes]
 
 evaluate :: Definitions -> AST.Expression -> Compiled F.Value
 evaluate _ (AST.FloatLiteral x _) = return (F.FloatValue x)
