@@ -1,5 +1,6 @@
 module Text.Nouns.Compiler.Document
 ( Number
+, Angle
 , Coordinate
 , Length
 , IRI

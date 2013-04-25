@@ -15,8 +15,8 @@ definitions = Map.fromList
   , (["color","red"],           color "ff0000")
   , (["color","green"],         color "00ff00")
   , (["color","blue"],          color "0000ff")
-  , (["gradient","vertical"],   verticalGradient)
-  , (["gradient","horizontal"], horizontalGradient)
+  , (["gradient","vertical"],   linearGradient 90)
+  , (["gradient","horizontal"], linearGradient 0)
   , (["gradient","radial"],     radialGradient)
   , (["image"],                 image)
   ]
@@ -46,12 +46,8 @@ requireGradientColorArgs = do
   to <- requireArg "to"
   return [(0, from), (1, to)]
 
-verticalGradient :: Function F.Value
-verticalGradient = fmap F.GradientValue $ D.LinearGradient 90
-  <$> requireGradientColorArgs
-
-horizontalGradient :: Function F.Value
-horizontalGradient = fmap F.GradientValue $ D.LinearGradient 0
+linearGradient :: D.Angle -> Function F.Value
+linearGradient angle = fmap F.GradientValue $ D.LinearGradient angle
   <$> requireGradientColorArgs
 
 radialGradient :: Function F.Value
