@@ -20,6 +20,9 @@ type Definitions = Map.Map [AST.Identifier] (F.Function F.Value)
 
 data CompileState = CompileState Definitions [D.Element]
 
+throw :: CompileError -> Compiled a
+throw = Left
+
 initialCompileState :: CompileState
 initialCompileState = CompileState Builtin.definitions []
 
@@ -35,8 +38,8 @@ compileStatement :: CompileState -> AST.Statement -> Compiled CompileState
 compileStatement (CompileState defs elems) (AST.ExpressionStatement expression) = do
   value <- evaluate defs expression
   case value of
-    F.ElementValue element -> Right $ CompileState defs (elems ++ [element])
-    _                      -> Left $ ExpressionStatementTypeError expression
+    F.ElementValue element -> return $ CompileState defs (elems ++ [element])
+    _                      -> throw $ ExpressionStatementTypeError expression
 compileStatement (CompileState defs elems) (AST.DefinitionStatement prototype expression _) =
   return $ CompileState (Map.insert identifierPath newFunction defs) elems
   where (AST.QualifiedIdentifier identifierPath _) = identifier
@@ -62,28 +65,26 @@ evaluate defs (AST.FunctionCall identifier args _) = do
   function <- lookUpFunction defs identifier
   (posArgs, kwArgs) <- evaluateArguments defs args
   case F.call function posArgs kwArgs of
-    Left callError -> Left (FunctionCallError identifier callError)
-    Right value    -> Right value
+    Left callError -> throw (FunctionCallError identifier callError)
+    Right value    -> return value
 
 lookUpFunction :: Definitions -> AST.QualifiedIdentifier -> Compiled (F.Function F.Value)
 lookUpFunction defs identifier@(AST.QualifiedIdentifier path _) =
   case Map.lookup path defs of
-    Just fn -> Right fn
-    Nothing -> Left (UndefinedFunctionError identifier)
+    Just fn -> return fn
+    Nothing -> throw (UndefinedFunctionError identifier)
 
 evaluateArguments :: Definitions -> [AST.Argument] -> Compiled ([F.Value], [(String, F.Value)])
 evaluateArguments defs args =
   let trailingPosArgs = dropWhile (not . isPosArg) $ dropWhile isPosArg args
   in if null trailingPosArgs
-    then fmap partitionEithers $ mapM (evaluateArgument defs) args
-    else Left $ PositionalArgumentError (head trailingPosArgs)
+    then partitionEithers <$> mapM (evaluateArgument defs) args
+    else throw $ PositionalArgumentError (head trailingPosArgs)
   where isPosArg (AST.PositionalArgument _) = True
         isPosArg _ = False
 
 evaluateArgument :: Definitions -> AST.Argument -> Compiled (Either F.Value (String, F.Value))
-evaluateArgument defs (AST.PositionalArgument valueExp) = do
-  value <- evaluate defs valueExp
-  return $ Left value
-evaluateArgument defs (AST.KeywordArgument keyword valueExp _) = do
-  value <- evaluate defs valueExp
-  return $ Right (keyword, value)
+evaluateArgument defs (AST.PositionalArgument expression) =
+  Left <$> evaluate defs expression
+evaluateArgument defs (AST.KeywordArgument keyword expression _) =
+  Right . (,) keyword <$> evaluate defs expression

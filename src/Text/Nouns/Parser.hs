@@ -4,8 +4,9 @@ module Text.Nouns.Parser
 , ParseError
 ) where
 
-import Text.ParserCombinators.Parsec (Parser, ParseError, many, sepBy1, eof, option)
-import Text.Parsec.Prim (getPosition, try, (<|>), (<?>))
+import Control.Applicative
+import Text.ParserCombinators.Parsec (Parser, ParseError, sepBy1, eof, option)
+import Text.Parsec.Prim (getPosition, try, (<?>))
 import qualified Text.Parsec.Prim
 import qualified Text.Parsec.String
 import qualified Text.Nouns.Parser.Token as Token
@@ -61,7 +62,7 @@ expression = try hexRGBLiteral <|>
              functionCall
 
 expressionStatement :: Parser AST.Statement
-expressionStatement = fmap AST.ExpressionStatement expression
+expressionStatement = AST.ExpressionStatement <$> expression
 
 argumentPrototype :: Parser AST.ArgumentPrototype
 argumentPrototype = do
@@ -102,7 +103,7 @@ keywordArgument = do
   return $ AST.KeywordArgument keyword val (start, end)
 
 positionalArgument :: Parser AST.Argument
-positionalArgument = fmap AST.PositionalArgument expression
+positionalArgument = AST.PositionalArgument <$> expression
 
 argument :: Parser AST.Argument
 argument = try keywordArgument

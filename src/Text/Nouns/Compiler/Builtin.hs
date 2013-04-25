@@ -17,12 +17,12 @@ definitions = Map.fromList
   , (["color","blue"],          color "0000ff")
   , (["gradient","vertical"],   verticalGradient)
   , (["gradient","horizontal"], horizontalGradient)
-  , (["gradient","radial"],    radialGradient)
+  , (["gradient","radial"],     radialGradient)
   , (["image"],                 image)
   ]
 
 rectangle :: Function F.Value
-rectangle = fmap F.ElementValue $ D.Rectangle
+rectangle =  fmap F.ElementValue $ D.Rectangle
   <$> requireArg "x"
   <*> requireArg "y"
   <*> requireArg "width"
