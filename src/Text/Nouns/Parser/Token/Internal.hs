@@ -1,5 +1,5 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-unused-do-bind -fno-warn-name-shadowing#-}
+{-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-unused-do-bind -fno-warn-name-shadowing #-}
 
 module Text.Nouns.Parser.Token.Internal
 ( identifier
@@ -25,8 +25,6 @@ import Text.Parsec.Token
   , commentEnd
   )
 import qualified Text.Nouns.Parser.Language
-
-{-# ANN module "HLint: ignore" #-}
 
 languageDef = Text.Nouns.Parser.Language.def
 
@@ -155,7 +153,6 @@ escapeGap       = do{ many1 space
 
 
 
--- escape codes
 escapeCode      = charEsc <|> charNum <|> charAscii <|> charControl
                 <?> "escape code"
 
@@ -179,8 +176,7 @@ charAscii       = choice (map parseAscii asciiMap)
                   parseAscii (asc,code) = try (do{ string asc; return code })
 
 
--- escape code tables
-escMap          = zip ("abfnrtv\\\"\'") ("\a\b\f\n\r\t\v\\\"\'")
+escMap          = zip "abfnrtv\\\"\'" "\a\b\f\n\r\t\v\\\"\'"
 asciiMap        = zip (ascii3codes ++ ascii2codes) (ascii3 ++ ascii2)
 
 ascii2codes     = ["BS","HT","LF","VT","FF","CR","SO","SI","EM",
@@ -221,7 +217,6 @@ whiteSpace
     where
       noLine  = null (commentLine languageDef)
       noMulti = null (commentStart languageDef)
-
 
 simpleSpace =
     skipMany1 (satisfy isSpace)
