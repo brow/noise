@@ -79,15 +79,22 @@ functionPrototype = do
   end <- getPosition
   return $ AST.FunctionPrototype identifier args (start, end)
 
+reserved :: String -> Parser AST.Reserved
+reserved str = do
+  start <- getPosition
+  Token.reserved str
+  end <- getPosition
+  return $ AST.Reserved str (start, end)
+
 functionDefStatement :: Parser AST.Statement
 functionDefStatement = do
   start <- getPosition
-  Token.reserved "let"
+  reservedLet <- reserved "let"
   prototype <- functionPrototype
   _ <- Token.symbol "="
   definition <- expression
   end <- getPosition
-  return $ AST.DefinitionStatement prototype definition (start, end)
+  return $ AST.DefinitionStatement reservedLet prototype definition (start, end)
 
 statement :: Parser AST.Statement
 statement = try functionDefStatement <|>

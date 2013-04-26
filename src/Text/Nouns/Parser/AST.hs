@@ -6,6 +6,7 @@ module Text.Nouns.Parser.AST
 , Argument(..)
 , Expression(..)
 , Statement(..)
+, Reserved(..)
 , FunctionPrototype(..)
 , ArgumentPrototype(..)
 ) where
@@ -20,8 +21,10 @@ type Identifier = String
 
 type IdentifierPath = [Identifier]
 
+data Reserved = Reserved String SourceRange deriving (Show, Eq)
+
 data Statement = ExpressionStatement Expression
-               | DefinitionStatement FunctionPrototype Expression SourceRange
+               | DefinitionStatement Reserved FunctionPrototype Expression SourceRange
                deriving (Show, Eq)
 
 data FunctionPrototype = FunctionPrototype QualifiedIdentifier [ArgumentPrototype] SourceRange deriving (Show, Eq)
@@ -56,10 +59,13 @@ instance HasSourceRange Argument where
 
 instance HasSourceRange Statement where
   rangeInSource (ExpressionStatement expression) = rangeInSource expression
-  rangeInSource (DefinitionStatement _ _ r) = r
+  rangeInSource (DefinitionStatement _ _ _ r) = r
 
 instance HasSourceRange FunctionPrototype where
   rangeInSource (FunctionPrototype _ _ r) = r
 
 instance HasSourceRange ArgumentPrototype where
   rangeInSource (RequiredArgumentPrototype _ r) = r
+
+instance HasSourceRange Reserved where
+  rangeInSource (Reserved _ r) = r

@@ -42,7 +42,7 @@ compileStatement (CompileState defs elems) (AST.ExpressionStatement expression) 
   case value of
     F.ElementValue element -> return $ CompileState defs (elems ++ [element])
     _                      -> throw $ ExpressionStatementTypeError expression
-compileStatement (CompileState defs elems) (AST.DefinitionStatement fnPrototype expression _) = do
+compileStatement (CompileState defs elems) (AST.DefinitionStatement _ fnPrototype expression _) = do
   (functionPath, argNames) <- compileFunctionPrototype fnPrototype
   let definition = compileFunctionDef defs argNames expression
   return $ CompileState (Map.insert functionPath definition defs) elems
