@@ -1,10 +1,12 @@
-module Text.Nouns.Parser.Language (nounsDef) where
+module Text.Nouns.Parser.Language
+( def
+) where
 
 import Text.Parsec
-import Text.Parsec.Token as Token
+import Text.Parsec.Token as Parsec.Token
 
-nounsDef :: Token.LanguageDef st
-nounsDef = Token.LanguageDef
+def :: Parsec.Token.LanguageDef st
+def = Parsec.Token.LanguageDef
   { commentStart = "/*"
   , commentEnd = "*/"
   , commentLine = "//"

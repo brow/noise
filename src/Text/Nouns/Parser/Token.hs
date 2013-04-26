@@ -1,5 +1,6 @@
 module Text.Nouns.Parser.Token
-( identifier
+( Parser
+, identifier
 , number
 , hexRGB
 , stringLiteral
@@ -11,51 +12,57 @@ module Text.Nouns.Parser.Token
 , reserved
 ) where
 
-import qualified Text.Parsec.Token as T
+import Control.Applicative
+import Text.Parsec hiding (many, (<|>))
+import qualified Text.Parsec.Token as Parsec.Token
+import qualified Text.Nouns.Parser.Token.Internal as Internal
 import qualified Text.Nouns.Parser.Language as Language
 import qualified Text.Nouns.Parser.AST as AST
-import Text.ParserCombinators.Parsec
 
-identifier :: Parser AST.Identifier
-identifier = T.identifier tokenParser
+{-# ANN module "HLint: ignore Use string literal" #-}
 
-float :: Parser Double
-float = T.float tokenParser
+type Parser = Parsec String SourcePos
 
-integer :: Parser Integer
-integer = T.integer tokenParser
-
-number :: Parser Double
-number = lexeme (try float <|> fmap fromInteger integer)
-
-hexRGB :: Parser String
-hexRGB = lexeme $ do
-  _ <- char '#'
-  count 6 hexDigit
-
-stringLiteral :: Parser String
-stringLiteral = T.stringLiteral tokenParser
+markSourcePos :: Parser ()
+markSourcePos = getPosition >>= setState
 
 whiteSpace :: Parser ()
-whiteSpace = T.whiteSpace tokenParser
-
-parens :: Parser a -> Parser a
-parens = T.parens tokenParser
-
-commaSeparated :: Parser a -> Parser [a]
-commaSeparated = T.commaSep tokenParser
-
-dot :: Parser String
-dot = T.dot tokenParser
-
-symbol :: String -> Parser String
-symbol = T.symbol tokenParser
-
-reserved :: String -> Parser ()
-reserved = T.reserved tokenParser
+whiteSpace = Parsec.Token.whiteSpace tokenParser
+  where tokenParser = Parsec.Token.makeTokenParser Language.def
 
 lexeme :: Parser a -> Parser a
-lexeme = T.lexeme tokenParser
+lexeme p = p <* markSourcePos <* whiteSpace
 
-tokenParser :: T.TokenParser st
-tokenParser = T.makeTokenParser Language.nounsDef
+identifier :: Parser AST.Identifier
+identifier = lexeme Internal.identifier
+
+float :: Parser Double
+float = lexeme Internal.float
+
+integer :: Parser Integer
+integer = lexeme Internal.integer
+
+number :: Parser Double
+number = try float
+         <|> fmap fromInteger integer
+
+hexRGB :: Parser String
+hexRGB = lexeme (char '#' >> count 6 hexDigit)
+
+stringLiteral :: Parser String
+stringLiteral = lexeme Internal.stringLiteral
+
+parens :: Parser a -> Parser a
+parens = between (symbol "(") (symbol ")")
+
+commaSeparated :: Parser a -> Parser [a]
+commaSeparated p = sepBy p (symbol ",")
+
+dot :: Parser String
+dot = symbol "."
+
+symbol :: String -> Parser String
+symbol = lexeme . string
+
+reserved :: String -> Parser ()
+reserved name = lexeme $ Internal.reserved name

@@ -1,22 +1,19 @@
 module Text.Nouns.Parser
 ( parse
-, parseFile
 , ParseError
 ) where
 
 import Control.Applicative
-import Text.ParserCombinators.Parsec (Parser, ParseError, sepBy1, eof, option)
+import Text.ParserCombinators.Parsec (ParseError, sepBy1, eof, option)
 import Text.Parsec.Prim (getPosition, try, (<?>))
+import Text.Parsec.Pos (initialPos)
 import qualified Text.Parsec.Prim
-import qualified Text.Parsec.String
+import Text.Nouns.Parser.Token (Parser)
 import qualified Text.Nouns.Parser.Token as Token
 import qualified Text.Nouns.Parser.AST as AST
 
 parse :: String -> Either ParseError AST.SourceFile
-parse = Text.Parsec.Prim.parse sourceFile ""
-
-parseFile :: String -> IO (Either ParseError AST.SourceFile)
-parseFile = Text.Parsec.String.parseFromFile sourceFile
+parse = Text.Parsec.Prim.runParser sourceFile (initialPos "" ) ""
 
 qualifiedIdentifier :: Parser AST.QualifiedIdentifier
 qualifiedIdentifier = do
@@ -24,7 +21,6 @@ qualifiedIdentifier = do
   components <- sepBy1 Token.identifier Token.dot
   end <- getPosition
   return $ AST.QualifiedIdentifier components (start, end)
-
 
 floatLiteral :: Parser AST.Expression
 floatLiteral = do
