@@ -21,25 +21,18 @@ qualifiedIdentifier = ranged $ do
   return $ AST.QualifiedIdentifier components
 
 floatLiteral :: Parser AST.Expression
-floatLiteral = ranged $ do
-  float <- Token.number
-  return $ AST.FloatLiteral float
+floatLiteral = ranged (AST.FloatLiteral <$> Token.number)
 
 hexRGBLiteral :: Parser AST.Expression
-hexRGBLiteral = ranged $ do
-  hexString <- Token.hexRGB
-  return $ AST.HexRGBLiteral hexString
+hexRGBLiteral = ranged (AST.HexRGBLiteral <$> Token.hexRGB)
 
 stringLiteral :: Parser AST.Expression
-stringLiteral = ranged $ do
-  string <- Token.stringLiteral
-  return $ AST.StringLiteral string
+stringLiteral = ranged (AST.StringLiteral <$> Token.stringLiteral)
 
 functionCall :: Parser AST.Expression
-functionCall = ranged $ do
-  name <- qualifiedIdentifier
-  args <- option [] $ Token.parens (Token.commaSeparated argument)
-  return $ AST.FunctionCall name args
+functionCall = ranged $ AST.FunctionCall
+  <$> qualifiedIdentifier
+  <*> option [] (Token.parens (Token.commaSeparated argument))
 
 expression :: Parser AST.Expression
 expression = try hexRGBLiteral <|>
@@ -51,20 +44,15 @@ expressionStatement :: Parser AST.Statement
 expressionStatement = AST.ExpressionStatement <$> expression
 
 argumentPrototype :: Parser AST.ArgumentPrototype
-argumentPrototype = ranged $ do
-  identifier <- Token.identifier
-  return $ AST.RequiredArgumentPrototype identifier
+argumentPrototype = ranged (AST.RequiredArgumentPrototype <$> Token.identifier)
 
 functionPrototype :: Parser AST.FunctionPrototype
-functionPrototype = ranged $ do
-  identifier <- qualifiedIdentifier
-  args <- option [] $ Token.parens (Token.commaSeparated argumentPrototype)
-  return $ AST.FunctionPrototype identifier args
+functionPrototype = ranged $ AST.FunctionPrototype
+  <$> qualifiedIdentifier
+  <*> option [] (Token.parens (Token.commaSeparated argumentPrototype))
 
 reserved :: String -> Parser AST.Reserved
-reserved str = ranged $ do
-  Token.reserved str
-  return $ AST.Reserved str
+reserved str = ranged $ Token.reserved str >> return (AST.Reserved str)
 
 functionDefStatement :: Parser AST.Statement
 functionDefStatement = ranged $ do
@@ -96,8 +84,6 @@ argument = try keywordArgument
 sourceFile :: Parser AST.SourceFile
 sourceFile = do
   Token.whiteSpace
-  ast <- ranged $ do
-    statements <- many statement
-    return (AST.SourceFile statements)
+  ast <- ranged (AST.SourceFile <$> many statement)
   eof
   return ast
