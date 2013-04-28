@@ -30,9 +30,12 @@ type IRI = URI.URI
 showFuncIRI :: IRI -> String
 showFuncIRI iri = "url(" ++ show iri ++ ")"
 
+isUnescapedInURIComponent :: Char -> Bool
+isUnescapedInURIComponent c = not (URI.isReserved c || not (URI.isUnescapedInURI c))
+
 localIRIForId :: String -> IRI
 localIRIForId id' = URI.nullURI { URI.uriFragment = fragment }
-  where fragment = '#' : URI.escapeURIString URI.isUnescapedInURIComponent id'
+  where fragment = '#' : URI.escapeURIString isUnescapedInURIComponent id'
 
 fileIRI :: String -> Maybe IRI
 fileIRI = URI.parseRelativeReference
