@@ -22,7 +22,7 @@ executable nouns
     blaze-markup ==0.5.*,
     cryptohash ==0.8.*,
     bytestring ==0.9.*,
-    network ==2.4.*,
+    network ==2.3.*,
     containers ==0.4.*
 
 test-suite test
@@ -33,7 +33,7 @@ test-suite test
   build-depends:
     base ==4.5.*,
     parsec ==3.1.*,
-    network ==2.4.*,
+    network ==2.3.*,
     containers ==0.4.*,
     HTF ==0.10.*,
     HUnit ==1.2.*,
