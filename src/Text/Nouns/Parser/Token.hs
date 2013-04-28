@@ -1,5 +1,6 @@
 module Text.Nouns.Parser.Token
 ( Parser
+, ranged
 , identifier
 , number
 , hexRGB
@@ -15,6 +16,7 @@ module Text.Nouns.Parser.Token
 import Control.Applicative
 import Text.Parsec hiding (many, (<|>))
 import qualified Text.Parsec.Token as Parsec.Token
+import Text.Nouns.SourceRange (SourceRange)
 import qualified Text.Nouns.Parser.Token.Internal as Internal
 import qualified Text.Nouns.Parser.Language as Language
 import qualified Text.Nouns.Parser.AST as AST
@@ -23,15 +25,25 @@ import qualified Text.Nouns.Parser.AST as AST
 
 type Parser = Parsec String SourcePos
 
-markSourcePos :: Parser ()
-markSourcePos = getPosition >>= setState
+markPosition :: Parser ()
+markPosition = getPosition >>= setState
+
+getMarkedPosition :: Parser SourcePos
+getMarkedPosition = getState
+
+ranged :: Parser (SourceRange -> a) -> Parser a
+ranged p = do
+  start <- getPosition
+  x <- p
+  end <- getMarkedPosition
+  return $ x (start, end)
 
 whiteSpace :: Parser ()
 whiteSpace = Parsec.Token.whiteSpace tokenParser
   where tokenParser = Parsec.Token.makeTokenParser Language.def
 
 lexeme :: Parser a -> Parser a
-lexeme p = p <* markSourcePos <* whiteSpace
+lexeme p = p <* markPosition <* whiteSpace
 
 identifier :: Parser AST.Identifier
 identifier = lexeme Internal.identifier
