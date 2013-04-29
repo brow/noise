@@ -31,14 +31,15 @@ stringLiteral = ranged (AST.StringLiteral <$> Token.stringLiteral)
 
 functionCall :: Parser AST.Expression
 functionCall = ranged $ AST.FunctionCall
-  <$> qualifiedIdentifier
+  <$> qualifiedIdentifier <* notFollowedBy (Token.symbol ":")
   <*> option [] (Token.parens (Token.commaSeparated argument))
 
 expression :: Parser AST.Expression
-expression = try hexRGBLiteral <|>
-             try floatLiteral <|>
-             try stringLiteral <|>
-             functionCall
+expression = try hexRGBLiteral
+         <|> try floatLiteral
+         <|> try stringLiteral
+         <|> functionCall
+         <?> "expression"
 
 expressionStatement :: Parser AST.Statement
 expressionStatement = AST.ExpressionStatement <$> expression
@@ -77,9 +78,9 @@ positionalArgument :: Parser AST.Argument
 positionalArgument = AST.PositionalArgument <$> expression
 
 argument :: Parser AST.Argument
-argument = try keywordArgument
-           <|> positionalArgument
-           <?> "argument"
+argument = try positionalArgument
+       <|> keywordArgument
+       <?> "argument"
 
 sourceFile :: Parser AST.SourceFile
 sourceFile = do

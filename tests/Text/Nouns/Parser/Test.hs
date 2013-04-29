@@ -21,9 +21,19 @@ range = oneLineRange ""
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
-test_unexpected_eof = assertError
+test_expecting_argument = assertError
   "Unexpected end of input. Expecting argument or \")\"."
   "foo("
+
+test_expecting_identifier = assertError
+  "Unexpected end of input. Expecting identifier."
+  "let "
+
+test_expecting_expression = mapM
+  (assertError "Unexpected end of input. Expecting expression.")
+  [ "let foo ="
+  , "fn(foo:" ]
+
 test_ranges = assertAST
   (AST.SourceFile
     [AST.DefinitionStatement
