@@ -4,7 +4,7 @@ module Text.Nouns.Parser
 ) where
 
 import Control.Applicative
-import Text.ParserCombinators.Parsec (ParseError, sepBy1, eof, option)
+import Text.ParserCombinators.Parsec (ParseError, sepBy1, eof, option, notFollowedBy)
 import Text.Parsec.Prim (try, (<?>))
 import Text.Parsec.Pos (initialPos)
 import qualified Text.Parsec.Prim (runParser)
@@ -16,9 +16,8 @@ parse :: String -> Either ParseError AST.SourceFile
 parse = Text.Parsec.Prim.runParser sourceFile (initialPos "" ) ""
 
 qualifiedIdentifier :: Parser AST.QualifiedIdentifier
-qualifiedIdentifier = ranged $ do
-  components <- sepBy1 Token.identifier Token.dot
-  return $ AST.QualifiedIdentifier components
+qualifiedIdentifier = ranged
+  (AST.QualifiedIdentifier <$> sepBy1 Token.identifier Token.dot)
 
 floatLiteral :: Parser AST.Expression
 floatLiteral = ranged (AST.FloatLiteral <$> Token.number)
@@ -56,23 +55,19 @@ reserved :: String -> Parser AST.Reserved
 reserved str = ranged $ Token.reserved str >> return (AST.Reserved str)
 
 functionDefStatement :: Parser AST.Statement
-functionDefStatement = ranged $ do
-  reservedLet <- reserved "let"
-  prototype <- functionPrototype
-  _ <- Token.symbol "="
-  definition <- expression
-  return $ AST.DefinitionStatement reservedLet prototype definition
+functionDefStatement = ranged $ AST.DefinitionStatement
+  <$> reserved "let"
+  <*> functionPrototype <* Token.symbol "="
+  <*> expression
 
 statement :: Parser AST.Statement
 statement = try functionDefStatement <|>
             expressionStatement
 
 keywordArgument :: Parser AST.Argument
-keywordArgument = ranged $ do
-  keyword <- Token.identifier
-  _ <- Token.symbol ":"
-  val <- expression
-  return $ AST.KeywordArgument keyword val
+keywordArgument = ranged $ AST.KeywordArgument
+  <$> Token.identifier <* Token.symbol ":"
+  <*> expression
 
 positionalArgument :: Parser AST.Argument
 positionalArgument = AST.PositionalArgument <$> expression
