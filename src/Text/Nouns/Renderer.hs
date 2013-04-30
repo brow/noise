@@ -25,6 +25,9 @@ class Renderable a where
   renderToSvg = uninline . renderToInlineSvg
   render = Pretty.renderSvg . renderToSvg
 
+instance (Renderable a) => Renderable [a] where
+  renderToInlineSvg = mconcat . map renderToInlineSvg
+
 data InlineSvg = InlineSvg [Svg] Svg
 
 data InlineAttribute = InlineAttribute (Maybe Svg) SVG.Attribute
@@ -76,6 +79,9 @@ instance Renderable D.Element where
     ! At.height h
     ! At.xlinkHref file
     ! At.preserveaspectratio "none"
+
+  renderToInlineSvg (D.Group members) = InlineSvg defs (SVG.g innerSvg)
+    where InlineSvg defs innerSvg = renderToInlineSvg members
 
 instance Renderable D.Gradient where
   renderToSvg gradient = svgGradient $ forM_ (D.stops gradient) $ \(offset, color) ->
