@@ -4,7 +4,7 @@ module Text.Nouns.Parser
 ) where
 
 import Control.Applicative
-import Text.ParserCombinators.Parsec (ParseError, sepBy1, eof, option, notFollowedBy)
+import Text.ParserCombinators.Parsec (ParseError, sepBy1, eof, option)
 import Text.Parsec.Prim (try, (<?>))
 import Text.Parsec.Pos (initialPos)
 import qualified Text.Parsec.Prim (runParser)
@@ -30,7 +30,7 @@ stringLiteral = ranged (AST.StringLiteral <$> Token.stringLiteral)
 
 functionCall :: Parser AST.Expression
 functionCall = ranged $ AST.FunctionCall
-  <$> qualifiedIdentifier <* notFollowedBy (Token.symbol ":")
+  <$> qualifiedIdentifier
   <*> option [] (Token.parens (Token.commaSeparated argument))
   <*> option Nothing (Just <$> block)
 
@@ -41,9 +41,9 @@ block = ranged $ AST.Block
   <*> reserved "end"
 
 expression :: Parser AST.Expression
-expression = try hexRGBLiteral
-         <|> try floatLiteral
-         <|> try stringLiteral
+expression = hexRGBLiteral
+         <|> floatLiteral
+         <|> stringLiteral
          <|> functionCall
          <?> "expression"
 
@@ -68,20 +68,21 @@ functionDefStatement = ranged $ AST.DefinitionStatement
   <*> expression
 
 statement :: Parser AST.Statement
-statement = try functionDefStatement <|>
-            expressionStatement
+statement = functionDefStatement
+        <|> expressionStatement
+        <?> "statement"
 
 keywordArgument :: Parser AST.Argument
 keywordArgument = ranged $ AST.KeywordArgument
-  <$> Token.identifier <* Token.symbol ":"
+  <$> try (Token.identifier <* Token.symbol ":")
   <*> expression
 
 positionalArgument :: Parser AST.Argument
 positionalArgument = AST.PositionalArgument <$> expression
 
 argument :: Parser AST.Argument
-argument = try positionalArgument
-       <|> keywordArgument
+argument = keywordArgument
+       <|> positionalArgument
        <?> "argument"
 
 sourceFile :: Parser AST.SourceFile

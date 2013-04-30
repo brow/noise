@@ -34,6 +34,10 @@ test_expecting_expression = mapM
   [ "let foo ="
   , "fn(foo:" ]
 
+test_expecting_statement = assertError
+  "Unexpected end of input. Expecting statement or \"end\"."
+  "group with "
+
 test_ranges = assertAST
   (AST.SourceFile
     [AST.DefinitionStatement
