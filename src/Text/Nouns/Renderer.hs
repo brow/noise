@@ -2,11 +2,12 @@
 
 module Text.Nouns.Renderer (render) where
 
-import           Numeric (showHex)
 import           Data.Monoid
-import           Data.List (foldl')
-import           Data.ByteString (unpack)
-import           Control.Monad (forM_)
+import           Data.Function
+import           Control.Monad
+import qualified Numeric
+import qualified Data.List as List
+import qualified Data.ByteString as ByteString
 import qualified Crypto.Hash.SHA1 as SHA1
 import qualified Text.Blaze.Internal as Blaze
 import qualified Text.Blaze.Svg11 as SVG
@@ -28,14 +29,14 @@ class Renderable a where
 instance (Renderable a) => Renderable [a] where
   renderToInlineSvg = mconcat . map renderToInlineSvg
 
-data InlineSvg = InlineSvg [Svg] Svg
+data InlineSvg = InlineSvg [(String, Svg)] Svg
 
-data InlineAttribute = InlineAttribute (Maybe Svg) SVG.Attribute
+data InlineAttribute = InlineAttribute (Maybe (String, Svg)) SVG.Attribute
 
 instance Monoid InlineSvg where
   mempty = InlineSvg [] mempty
   mappend (InlineSvg defs svg) (InlineSvg defs' svg') =
-    InlineSvg (defs <> defs') (svg <> svg')
+    InlineSvg (List.unionBy ((==) `on` fst) defs defs') (svg <> svg')
 
 (?) :: InlineSvg -> InlineAttribute -> InlineSvg
 (InlineSvg defs svg) ? (InlineAttribute attrDef attr) = InlineSvg defs' svg'
@@ -48,7 +49,7 @@ inline :: Svg -> InlineSvg
 inline = InlineSvg []
 
 uninline :: InlineSvg -> Svg
-uninline (InlineSvg defs main) = SVG.defs (mconcat defs) <> main
+uninline (InlineSvg defs main) = SVG.defs (mconcat $ map snd defs) <> main
 
 instance Blaze.Attributable InlineSvg where
   (!) (InlineSvg defs main) attr = InlineSvg defs (main ! attr)
@@ -101,11 +102,11 @@ strAttr :: (SVG.AttributeValue -> SVG.Attribute) -> String -> InlineAttribute
 strAttr attrFn = InlineAttribute Nothing . attrFn . Blaze.stringValue
 
 svgAttr :: (Renderable a) => (SVG.AttributeValue -> SVG.Attribute) -> a -> InlineAttribute
-svgAttr attrFn x = InlineAttribute (Just svg') $ attrFn (Blaze.stringValue funcIRI)
+svgAttr attrFn x = InlineAttribute (Just (uniqueId, svg')) $ attrFn (Blaze.stringValue funcIRI)
   where svg = renderToSvg x
         svg' = svg ! At.id uniqueId
         funcIRI = D.showFuncIRI (D.localIRIForId uniqueId)
-        uniqueId = foldl' (flip showHex) "" $ unpack sha
+        uniqueId = List.foldl' (flip Numeric.showHex) "" $ ByteString.unpack sha
         sha = SHA1.hashlazy (Utf8.renderSvg svg)
 
 fillAttr :: D.Paint -> InlineAttribute
