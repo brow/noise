@@ -20,7 +20,7 @@ type Compiled a = Either CompileError a
 
 type Definitions = Map.Map AST.IdentifierPath (F.Function F.Value)
 
-data CompileState = CompileState Definitions [D.Element]
+data CompileState a = CompileState Definitions [a]
 
 throw :: CompileError -> Compiled a
 throw = Left
@@ -30,18 +30,18 @@ compile (AST.SourceFile statements _) = do
   CompileState _ elems <- compileStatements statements
   return $ D.Document elems
 
-compileStatementsWithDefs :: Definitions -> [AST.Statement] -> Compiled CompileState
+compileStatementsWithDefs :: (F.FromValue a) => Definitions -> [AST.Statement] -> Compiled (CompileState a)
 compileStatementsWithDefs defs = foldM compileStatement (CompileState defs [])
 
-compileStatements :: [AST.Statement] -> Compiled CompileState
+compileStatements :: (F.FromValue a) => [AST.Statement] -> Compiled (CompileState a)
 compileStatements = compileStatementsWithDefs Builtin.definitions
 
-compileStatement :: CompileState -> AST.Statement -> Compiled CompileState
-compileStatement (CompileState defs elems) (AST.ExpressionStatement expression) = do
+compileStatement :: (F.FromValue a) => CompileState a -> AST.Statement -> Compiled (CompileState a)
+compileStatement (CompileState defs xs) (AST.ExpressionStatement expression) = do
   value <- evaluate defs expression
-  case value of
-    F.ElementValue element -> return $ CompileState defs (elems ++ [element])
-    _                      -> throw $ ExpressionStatementTypeError expression
+  case F.fromValue value of
+    Just x  -> return $ CompileState defs (xs ++ [x])
+    Nothing -> throw $ ExpressionStatementTypeError expression
 compileStatement (CompileState defs elems) (AST.DefinitionStatement _ fnPrototype expression _) = do
   (functionPath, argNames) <- compileFunctionPrototype fnPrototype
   let definition = compileFunctionDef defs argNames expression
@@ -86,7 +86,7 @@ evaluateBlock :: Definitions -> Maybe AST.Block -> Compiled [F.Value]
 evaluateBlock _ Nothing = return []
 evaluateBlock defs (Just (AST.Block _ statements _ _)) = do
   CompileState _ elems <- compileStatementsWithDefs defs statements
-  return (F.ElementValue <$> elems)
+  return elems
 
 lookUpFunction :: Definitions -> AST.QualifiedIdentifier -> Compiled (F.Function F.Value)
 lookUpFunction defs identifier@(AST.QualifiedIdentifier path _) =

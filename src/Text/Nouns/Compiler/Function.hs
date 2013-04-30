@@ -3,6 +3,7 @@
 module Text.Nouns.Compiler.Function
 ( Function
 , Value(..)
+, FromValue(..)
 , FunctionError(..)
 , requireArg
 , acceptArg

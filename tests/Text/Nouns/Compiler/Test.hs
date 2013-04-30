@@ -25,6 +25,10 @@ test_argument_type_error = assertError
   "Argument \"cx\" to function \"shape.circle\" has incorrect type."
   "shape.circle(cx:#ffffff)"
 
+test_block_statement_type_error = assertError
+  "Statement in block of function \"group\" has incorrect type."
+  "group with #123456 end"
+
 test_bad_filename = assertError
   "Argument \"file\" to function \"image\" has incorrect type."
   "image(0,0,50,50,\"http://example.com/image.png\")"
