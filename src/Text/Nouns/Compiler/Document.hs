@@ -79,4 +79,6 @@ data Element = Rectangle { x :: Coordinate
                      , height :: Length
                      , file :: IRI
                      }
+             | Group { members :: [Element]
+                     }
              deriving (Show, Eq)

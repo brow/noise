@@ -9,6 +9,7 @@ module Text.Nouns.Parser.AST
 , Reserved(..)
 , FunctionPrototype(..)
 , ArgumentPrototype(..)
+, Block(..)
 ) where
 
 import Text.Nouns.SourceRange (SourceRange, HasSourceRange(..))
@@ -34,12 +35,14 @@ data ArgumentPrototype = RequiredArgumentPrototype Identifier SourceRange derivi
 data Expression = FloatLiteral Double SourceRange
                 | HexRGBLiteral String SourceRange
                 | StringLiteral String SourceRange
-                | FunctionCall QualifiedIdentifier [Argument] SourceRange
+                | FunctionCall QualifiedIdentifier [Argument] (Maybe Block) SourceRange
                 deriving (Show, Eq)
 
 data Argument = KeywordArgument Identifier Expression SourceRange
               | PositionalArgument Expression
               deriving (Show, Eq)
+
+data Block = Block Reserved [Statement] Reserved SourceRange deriving (Show, Eq)
 
 instance HasSourceRange SourceFile where
   rangeInSource (SourceFile _ r) = r
@@ -51,7 +54,7 @@ instance HasSourceRange Expression where
   rangeInSource (FloatLiteral _ r) = r
   rangeInSource (HexRGBLiteral _ r) = r
   rangeInSource (StringLiteral _ r) = r
-  rangeInSource (FunctionCall _ _ r) = r
+  rangeInSource (FunctionCall _ _ _ r) = r
 
 instance HasSourceRange Argument where
   rangeInSource (KeywordArgument _ _ r) = r
@@ -69,3 +72,6 @@ instance HasSourceRange ArgumentPrototype where
 
 instance HasSourceRange Reserved where
   rangeInSource (Reserved _ r) = r
+
+instance HasSourceRange Block where
+  rangeInSource (Block _ _ _ r) = r

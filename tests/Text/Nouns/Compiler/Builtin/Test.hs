@@ -58,3 +58,16 @@ test_image = assertOutputElement
            width: 50,
            height: 50,
            file: "cat.jpeg")|]
+
+test_group_empty = assertOutputElement
+  (D.Group [])
+  [s|group|]
+
+test_group = assertOutputElement
+  (D.Group
+    [ D.Circle 1 2 3 $ D.ColorPaint $ D.Color "123456"
+    , D.Circle 4 5 6 $ D.ColorPaint $ D.Color "abcdef" ])
+  [s|group with
+       shape.circle(1,2,3,#123456)
+       shape.circle(4,5,6,#abcdef)
+     end|]

@@ -32,6 +32,13 @@ functionCall :: Parser AST.Expression
 functionCall = ranged $ AST.FunctionCall
   <$> qualifiedIdentifier <* notFollowedBy (Token.symbol ":")
   <*> option [] (Token.parens (Token.commaSeparated argument))
+  <*> option Nothing (Just <$> block)
+
+block :: Parser AST.Block
+block = ranged $ AST.Block
+  <$> reserved "with"
+  <*> many statement
+  <*> reserved "end"
 
 expression :: Parser AST.Expression
 expression = try hexRGBLiteral

@@ -48,7 +48,9 @@ test_ranges = assertAST
           (AST.FunctionCall
             (AST.QualifiedIdentifier ["baz"] (range 21 3))
             []
+            Nothing
             (range 21 3))]
+        Nothing
         (range 15 11))
       (range 2 24)]
     (range 2 24))

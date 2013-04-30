@@ -6,7 +6,7 @@ import Control.Applicative
 import qualified Data.Map as Map
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
-import Text.Nouns.Compiler.Function (Function, requireArg, acceptArg)
+import Text.Nouns.Compiler.Function (Function, requireArg, acceptArg, acceptBlockArgs)
 
 definitions :: Map.Map [String] (Function F.Value)
 definitions = Map.fromList
@@ -19,6 +19,7 @@ definitions = Map.fromList
   , (["gradient","horizontal"], linearGradient 0)
   , (["gradient","radial"],     radialGradient)
   , (["image"],                 image)
+  , (["group"],                 group)
   ]
 
 rectangle :: Function F.Value
@@ -61,3 +62,7 @@ image = fmap F.ElementValue $ D.Image
   <*> requireArg "width"
   <*> requireArg "height"
   <*> requireArg "file"
+
+group :: Function F.Value
+group = fmap F.ElementValue $ D.Group
+  <$> acceptBlockArgs

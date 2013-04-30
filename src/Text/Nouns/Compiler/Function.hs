@@ -6,6 +6,7 @@ module Text.Nouns.Compiler.Function
 , FunctionError(..)
 , requireArg
 , acceptArg
+, acceptBlockArgs
 , throw
 , call
 ) where
@@ -23,7 +24,7 @@ data Value = FloatValue Double
            | ElementValue D.Element
            | GradientValue D.Gradient
 
-data ArgStack = ArgStack [Value] [(Keyword,Value)]
+data ArgStack = ArgStack [Value] [(Keyword,Value)] [Value]
 
 data Result a = Success a ArgStack | Failure FunctionError
 
@@ -45,12 +46,12 @@ instance Monad Function where
         let Function r' = f x
         in  r' args'
 
-call :: Function a -> [Value] -> [(Keyword,Value)] -> Either FunctionError a
-call function args kwargs = case result of
-  Failure err                  -> Left err
-  Success _ (ArgStack (_:_) _) -> Left TooManyArgumentsError
-  Success ret _                -> Right ret
-  where result = runFunction function (ArgStack args kwargs)
+call :: Function a -> [Value] -> [(Keyword,Value)] -> [Value] -> Either FunctionError a
+call function posArgs kwArgs blockArgs = case result of
+  Failure err                    -> Left err
+  Success _ (ArgStack (_:_) _ _) -> Left TooManyArgumentsError
+  Success ret _                  -> Right ret
+  where result = runFunction function (ArgStack posArgs kwArgs blockArgs)
 
 class FromValue a where
   fromValue :: Value -> Maybe a
@@ -75,19 +76,23 @@ instance FromValue D.IRI where
   fromValue (StringValue x) = D.fileIRI x
   fromValue _ = Nothing
 
+instance FromValue D.Element where
+  fromValue (ElementValue x) = Just x
+  fromValue _ = Nothing
+
 getArg :: (FromValue a) => Keyword -> Maybe a -> Function a
 getArg keyword maybeDefault = Function $ \args -> case args of
-  ArgStack (value:xs) kwargs -> case fromValue value of
-    Just x     -> case lookup keyword kwargs of
-      Nothing       -> Success x (ArgStack xs kwargs)
+  ArgStack (value:xs) kwArgs blockArgs -> case fromValue value of
+    Just x     -> case lookup keyword kwArgs of
+      Nothing       -> Success x (ArgStack xs kwArgs blockArgs)
       Just _        -> Failure (RedundantKeywordArgError keyword)
     Nothing    -> Failure (ArgumentTypeError keyword)
-  ArgStack [] kwargs         -> case lookup keyword kwargs of
+  ArgStack [] kwArgs blockArgs         -> case lookup keyword kwArgs of
     Just value -> case fromValue value of
-      Just x        -> Success x (ArgStack [] kwargs)
+      Just x        -> Success x (ArgStack [] kwArgs blockArgs)
       Nothing       -> Failure (ArgumentTypeError keyword)
     Nothing    -> case maybeDefault of
-      Just default' -> Success default' (ArgStack [] kwargs)
+      Just default' -> Success default' (ArgStack [] kwArgs blockArgs)
       Nothing       -> Failure (MissingArgumentError keyword)
 
 requireArg :: (FromValue a) => Keyword -> Function a
@@ -95,6 +100,12 @@ requireArg keyword = getArg keyword Nothing
 
 acceptArg :: (FromValue a) => Keyword -> a -> Function a
 acceptArg keyword default' = getArg keyword (Just default')
+
+acceptBlockArgs :: (FromValue a) => Function [a]
+acceptBlockArgs = Function $ \args@(ArgStack _ _ xs) ->
+  case mapM fromValue xs of
+    Just xs' -> Success xs' args
+    Nothing  -> Failure BlockStatementTypeError
 
 throw :: FunctionError -> Function a
 throw err = Function $ \_ -> Failure err

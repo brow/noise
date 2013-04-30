@@ -10,6 +10,7 @@ import Text.Nouns.SourceRange (HasSourceRange, rangeInSource)
 
 data FunctionError = MissingArgumentError String
                    | ArgumentTypeError String
+                   | BlockStatementTypeError
                    | TooManyArgumentsError
                    | CompileError CompileError
                    | RedundantKeywordArgError String
@@ -32,8 +33,8 @@ instance HasSourceRange CompileError where
     PositionalArgumentError arg -> rangeInSource arg
     FunctionCallError _ (CompileError err') -> rangeInSource err'
     FunctionCallError fnCall _ -> rangeInSource fnCall
-
 instance Error.Error CompileError where
+
   message err =
     let showDotSyntax (AST.QualifiedIdentifier path _) = List.intercalate "." path
         showArgPrototypeName (AST.RequiredArgumentPrototype name _) = name
@@ -57,6 +58,8 @@ instance Error.Error CompileError where
           "Function \"" ++ fnName ++ "\" requires argument \"" ++ keyword ++ "\"."
         ArgumentTypeError keyword ->
           "Argument \"" ++ keyword ++ "\" to function \"" ++ fnName ++ "\" has incorrect type."
+        BlockStatementTypeError ->
+          "Statement in block of function \"" ++ fnName ++ "\" has incorrect type."
         TooManyArgumentsError ->
           "Too many arguments to function \"" ++ fnName ++ "\"."
         CompileError err' ->

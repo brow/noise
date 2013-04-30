@@ -25,16 +25,16 @@ data CompileState = CompileState Definitions [D.Element]
 throw :: CompileError -> Compiled a
 throw = Left
 
-initialCompileState :: CompileState
-initialCompileState = CompileState Builtin.definitions []
-
 compile :: AST.SourceFile -> Compiled D.Document
 compile (AST.SourceFile statements _) = do
   CompileState _ elems <- compileStatements statements
   return $ D.Document elems
 
+compileStatementsWithDefs :: Definitions -> [AST.Statement] -> Compiled CompileState
+compileStatementsWithDefs defs = foldM compileStatement (CompileState defs [])
+
 compileStatements :: [AST.Statement] -> Compiled CompileState
-compileStatements = foldM compileStatement initialCompileState
+compileStatements = compileStatementsWithDefs Builtin.definitions
 
 compileStatement :: CompileState -> AST.Statement -> Compiled CompileState
 compileStatement (CompileState defs elems) (AST.ExpressionStatement expression) = do
@@ -74,12 +74,19 @@ evaluate :: Definitions -> AST.Expression -> Compiled F.Value
 evaluate _ (AST.FloatLiteral x _)  = return (F.FloatValue x)
 evaluate _ (AST.HexRGBLiteral x _) = return (F.RGBValue x)
 evaluate _ (AST.StringLiteral x _) = return (F.StringValue x)
-evaluate defs (AST.FunctionCall identifier args _) = do
+evaluate defs (AST.FunctionCall identifier args block _) = do
   function <- lookUpFunction defs identifier
   (posArgs, kwArgs) <- evaluateArguments defs args
-  case F.call function posArgs kwArgs of
+  blockArgs <- evaluateBlock defs block
+  case F.call function posArgs kwArgs blockArgs of
     Left callError -> throw (FunctionCallError identifier callError)
     Right value    -> return value
+
+evaluateBlock :: Definitions -> Maybe AST.Block -> Compiled [F.Value]
+evaluateBlock _ Nothing = return []
+evaluateBlock defs (Just (AST.Block _ statements _ _)) = do
+  CompileState _ elems <- compileStatementsWithDefs defs statements
+  return (F.ElementValue <$> elems)
 
 lookUpFunction :: Definitions -> AST.QualifiedIdentifier -> Compiled (F.Function F.Value)
 lookUpFunction defs identifier@(AST.QualifiedIdentifier path _) =
