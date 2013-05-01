@@ -16,6 +16,7 @@ import Control.Applicative
 import Control.Monad
 import Text.Nouns.Compiler.Error (FunctionError(..))
 import qualified Text.Nouns.Compiler.Document as D
+import qualified Text.Nouns.Compiler.Document.Color as Color
 
 type Keyword = String
 
@@ -66,12 +67,12 @@ instance FromValue D.Number where
   fromValue _ = Nothing
 
 instance FromValue D.Paint where
-  fromValue (RGBValue x) = Just $ D.ColorPaint (D.Color x)
+  fromValue (RGBValue x) = D.ColorPaint <$> Color.fromHex x
   fromValue (GradientValue x) = Just (D.GradientPaint x)
   fromValue _ = Nothing
 
 instance FromValue D.Color where
-  fromValue (RGBValue x) = Just (D.Color x)
+  fromValue (RGBValue x) = Color.fromHex x
   fromValue _ = Nothing
 
 instance FromValue D.IRI where

@@ -1,15 +1,20 @@
 {-# OPTIONS_GHC -F -pgmF htfpp -fno-warn-missing-signatures #-}
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Text.Nouns.Compiler.Test where
 
 import Test.Framework
 import Data.String.QQ (s)
+import Data.Maybe
 import Assertion
 import Text.Nouns.SourceRange (oneLineRange)
 import qualified Text.Nouns.Compiler.Document as D
+import qualified Text.Nouns.Compiler.Document.Color as Color
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
+
+colorPaint :: String -> D.Paint
+colorPaint = D.ColorPaint . fromJust. Color.fromHex
 
 test_empty = assertOutput (D.Document []) ""
 
@@ -58,17 +63,17 @@ test_duplicate_args_in_function_def = assertError
   "let fn(x,y,x) = color.red"
 
 test_define_function_with_0_args = assertOutputElement
-  (D.Circle 0 0 15 $ D.ColorPaint $ D.Color "ffff00")
+  (D.Circle 0 0 15 $ colorPaint "ffff00")
   [s|let color.yellow = #ffff00
      shape.circle(0, 0, 15, fill:color.yellow)|]
 
 test_define_function_with_many_args = assertOutputElement
-  (D.Circle 0 0 20 $ D.ColorPaint $ D.Color "abcdef")
+  (D.Circle 0 0 20 $ colorPaint "abcdef")
   [s|let circle(r, c) = shape.circle(0, 0,r,c)
      circle(20, #abcdef)|]
 
 test_argument_shadows_function = assertOutputElement
-  (D.Circle 1 2 3 $ D.ColorPaint $ D.Color "123456")
+  (D.Circle 1 2 3 $ colorPaint "123456")
   [s|let x = #abcdef
      let f(x) = x
      shape.circle(1, 2, 3, f(#123456))|]

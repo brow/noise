@@ -3,9 +3,9 @@ module Text.Nouns.Compiler.Document
 , Angle
 , Coordinate
 , Length
+, Color
 , IRI
 , Paint(..)
-, Color(..)
 , Gradient(..)
 , Document(..)
 , Element(..)
@@ -17,6 +17,8 @@ module Text.Nouns.Compiler.Document
 ) where
 
 import qualified Network.URI as URI
+import Text.Nouns.Compiler.Document.Color (Color)
+import qualified Text.Nouns.Compiler.Document.Color as Color
 
 type Number = Double
 
@@ -41,11 +43,6 @@ localIRIForId id' = URI.nullURI { URI.uriFragment = fragment }
 fileIRI :: String -> Maybe IRI
 fileIRI = URI.parseRelativeReference
 
-newtype Color = Color { hexString :: String } deriving (Eq)
-
-instance Show Color where
-  show color = '#' : hexString color
-
 data Gradient = LinearGradient { angle :: Angle
                                , stops :: [(Number,Color)]
                                }
@@ -58,7 +55,7 @@ data Paint = ColorPaint Color
            deriving (Show, Eq)
 
 black :: Paint
-black = ColorPaint $ Color "000000"
+black = ColorPaint Color.black
 
 data Document = Document [Element] deriving (Show, Eq)
 

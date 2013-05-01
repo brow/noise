@@ -1,16 +1,17 @@
 {-# OPTIONS_GHC -F -pgmF htfpp -fno-warn-missing-signatures #-}
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
 module Text.Nouns.Parser.Test where
 
 import Test.Framework
 import Test.HUnit.Lang (Assertion)
 import Assertion
+import Data.Maybe
 import Text.Nouns.SourceRange (SourceRange, oneLineRange)
 import qualified Text.Nouns.Parser.AST as AST
 import qualified Text.Nouns.Parser as Parser
 import qualified Text.Nouns.Error as Error
 import qualified Text.Nouns.Compiler.Document as D
+import qualified Text.Nouns.Compiler.Document.Color as Color
 
 assertAST :: AST.SourceFile -> String -> Assertion
 assertAST ast src = case Parser.parse src of
@@ -19,6 +20,12 @@ assertAST ast src = case Parser.parse src of
 
 range :: Int -> Int -> SourceRange
 range = oneLineRange ""
+
+color :: String -> D.Color
+color = fromJust . Color.fromHex
+
+colorPaint :: String -> D.Paint
+colorPaint = D.ColorPaint . color
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
@@ -40,7 +47,7 @@ test_expecting_statement = assertError
   "group with "
 
 test_trailing_comma = assertOutputElement
-  (D.Circle 1 2 3 $ D.ColorPaint $ D.Color "000000")
+  (D.Circle 1 2 3 $ colorPaint "000000")
   "shape.circle(1,2,3,)"
 
 test_ranges = assertAST
