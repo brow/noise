@@ -7,9 +7,10 @@ import Test.Framework
 import Test.HUnit.Lang (Assertion)
 import Assertion
 import Text.Nouns.SourceRange (SourceRange, oneLineRange)
-import Text.Nouns.Parser.AST as AST
-import Text.Nouns.Parser as Parser
-import Text.Nouns.Error as Error
+import qualified Text.Nouns.Parser.AST as AST
+import qualified Text.Nouns.Parser as Parser
+import qualified Text.Nouns.Error as Error
+import qualified Text.Nouns.Compiler.Document as D
 
 assertAST :: AST.SourceFile -> String -> Assertion
 assertAST ast src = case Parser.parse src of
@@ -37,6 +38,10 @@ test_expecting_expression = mapM
 test_expecting_statement = assertError
   "Unexpected end of input. Expecting statement or \"end\"."
   "group with "
+
+test_trailing_comma = assertOutputElement
+  (D.Circle 1 2 3 $ D.ColorPaint $ D.Color "000000")
+  "shape.circle(1,2,3,)"
 
 test_ranges = assertAST
   (AST.SourceFile

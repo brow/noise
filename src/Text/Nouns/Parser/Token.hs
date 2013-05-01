@@ -68,7 +68,7 @@ parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
 commaSeparated :: Parser a -> Parser [a]
-commaSeparated p = sepBy p (symbol ",")
+commaSeparated p = sepEndBy p (symbol ",")
 
 dot :: Parser String
 dot = symbol "."
