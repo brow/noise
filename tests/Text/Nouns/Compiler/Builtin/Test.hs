@@ -71,3 +71,17 @@ test_group = assertOutputElement
        shape.circle(1,2,3,#123456)
        shape.circle(4,5,6,#abcdef)
      end|]
+
+test_empty_path = assertOutputElement
+  (D.Path (D.ColorPaint $ D.Color "000000") [])
+  [s|shape.path|]
+
+test_path = assertOutputElement
+  (D.Path
+    (D.ColorPaint $ D.Color "abcdef")
+    [ D.Move 1 2
+    , D.Line 3 4 ])
+  [s|shape.path(#abcdef) with
+       path.move(1,2)
+       path.line(3,4)
+     end|]

@@ -81,6 +81,10 @@ instance Renderable D.Element where
     ! At.xlinkHref file
     ! At.preserveaspectratio "none"
 
+  renderToInlineSvg (D.Path fill commands) = inline SVG.path
+    ! At.d (concatMap renderPathCommand commands)
+    ? fillAttr fill
+
   renderToInlineSvg (D.Group members) = InlineSvg defs (SVG.g innerSvg)
     where InlineSvg defs innerSvg = renderToInlineSvg members
 
@@ -112,3 +116,8 @@ svgAttr attrFn x = InlineAttribute (Just (uniqueId, svg')) $ attrFn (Blaze.strin
 fillAttr :: D.Paint -> InlineAttribute
 fillAttr (D.ColorPaint color) = strAttr SVG.At.fill (show color)
 fillAttr (D.GradientPaint gradient) = svgAttr SVG.At.fill gradient
+
+renderPathCommand :: D.PathCommand -> String
+renderPathCommand command = unwords $ case command of
+  D.Move x y -> ["m", show x, show y]
+  D.Line x y -> ["l", show x, show y]

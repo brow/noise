@@ -9,6 +9,7 @@ module Text.Nouns.Compiler.Document
 , Gradient(..)
 , Document(..)
 , Element(..)
+, PathCommand(..)
 , black
 , showFuncIRI
 , localIRIForId
@@ -81,4 +82,11 @@ data Element = Rectangle { x :: Coordinate
                      }
              | Group { members :: [Element]
                      }
+             | Path { fill :: Paint
+                    , commands :: [PathCommand]
+                    }
              deriving (Show, Eq)
+
+data PathCommand = Move Coordinate Coordinate
+                 | Line Coordinate Coordinate
+                 deriving (Show, Eq)

@@ -12,6 +12,7 @@ definitions :: Map.Map [String] (Function F.Value)
 definitions = Map.fromList
   [ (["shape","rectangle"],     rectangle)
   , (["shape","circle"],        circle)
+  , (["shape","path"],          path)
   , (["color","red"],           color "ff0000")
   , (["color","green"],         color "00ff00")
   , (["color","blue"],          color "0000ff")
@@ -20,6 +21,8 @@ definitions = Map.fromList
   , (["gradient","radial"],     radialGradient)
   , (["image"],                 image)
   , (["group"],                 group)
+  , (["path","move"],           pathMove)
+  , (["path","line"],           pathLine)
   ]
 
 rectangle :: Function F.Value
@@ -66,3 +69,18 @@ image = fmap F.ElementValue $ D.Image
 group :: Function F.Value
 group = fmap F.ElementValue $ D.Group
   <$> acceptBlockArgs
+
+path :: Function F.Value
+path = fmap F.ElementValue  $ D.Path
+  <$> acceptArg "fill" D.black
+  <*> acceptBlockArgs
+
+pathMove :: Function F.Value
+pathMove = fmap F.PathCommandValue $ D.Move
+  <$> requireArg "x"
+  <*> requireArg "y"
+
+pathLine :: Function F.Value
+pathLine = fmap F.PathCommandValue $ D.Line
+  <$> requireArg "x"
+  <*> requireArg "y"

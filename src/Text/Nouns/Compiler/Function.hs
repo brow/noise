@@ -24,6 +24,7 @@ data Value = FloatValue Double
            | StringValue String
            | ElementValue D.Element
            | GradientValue D.Gradient
+           | PathCommandValue D.PathCommand
 
 data ArgStack = ArgStack [Value] [(Keyword,Value)] [Value]
 
@@ -79,6 +80,10 @@ instance FromValue D.IRI where
 
 instance FromValue D.Element where
   fromValue (ElementValue x) = Just x
+  fromValue _ = Nothing
+
+instance FromValue D.PathCommand where
+  fromValue (PathCommandValue x) = Just x
   fromValue _ = Nothing
 
 getArg :: (FromValue a) => Keyword -> Maybe a -> Function a

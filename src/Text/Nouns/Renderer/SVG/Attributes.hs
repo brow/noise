@@ -52,5 +52,8 @@ y2 = SVG.y2 . stringValue . show
 xlinkHref :: D.IRI -> Attribute
 xlinkHref = SVG.xlinkHref . stringValue . show
 
+d :: String -> Attribute
+d = SVG.d . stringValue
+
 preserveaspectratio :: String -> Attribute
 preserveaspectratio = SVG.preserveaspectratio . stringValue
