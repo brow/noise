@@ -46,6 +46,12 @@ test_expecting_statement = assertError
   "Unexpected end of input. Expecting statement or \"end\"."
   "group with "
 
+test_invalid_malformed_color_literal = mapM
+  (assertError "Unexpected color format. Expecting form RRGGBB or AARRGGBB.")
+  [ "#abc"
+  , "#abcdef1"
+  , "#abcdef12345" ]
+
 test_trailing_comma = assertOutputElement
   (D.Circle 1 2 3 $ colorPaint "000000")
   "shape.circle(1,2,3,)"

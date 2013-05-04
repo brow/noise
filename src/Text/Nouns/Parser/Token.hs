@@ -3,7 +3,7 @@ module Text.Nouns.Parser.Token
 , ranged
 , identifier
 , number
-, hexLiteral
+, colorLiteral
 , stringLiteral
 , whiteSpace
 , parens
@@ -13,6 +13,7 @@ module Text.Nouns.Parser.Token
 , reserved
 ) where
 
+import Control.Monad
 import Control.Applicative
 import Text.Parsec hiding (many, (<|>))
 import qualified Text.Parsec.Token as Parsec.Token
@@ -58,8 +59,15 @@ number :: Parser Double
 number = try float
          <|> fmap fromInteger integer
 
-hexLiteral :: Int -> Parser String
-hexLiteral nDigits = lexeme (char '#' >> count nDigits hexDigit)
+colorLiteral :: Parser String
+colorLiteral = lexeme $ do
+  char '#'
+  (try $ do
+    str <- many hexDigit
+    unless
+      (length str `elem` [6,8])
+      (unexpected "color format")
+    return str) <?> "form RRGGBB or AARRGGBB"
 
 stringLiteral :: Parser String
 stringLiteral = lexeme Internal.stringLiteral

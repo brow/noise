@@ -23,8 +23,7 @@ floatLiteral :: Parser AST.Expression
 floatLiteral = ranged (AST.FloatLiteral <$> Token.number)
 
 colorLiteral :: Parser AST.Expression
-colorLiteral = ranged $ fmap AST.ColorLiteral $
-  try (Token.hexLiteral 8) <|> Token.hexLiteral 6
+colorLiteral = ranged (AST.ColorLiteral <$> Token.colorLiteral)
 
 stringLiteral :: Parser AST.Expression
 stringLiteral = ranged (AST.StringLiteral <$> Token.stringLiteral)
