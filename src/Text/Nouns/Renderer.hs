@@ -2,9 +2,12 @@
 
 module Text.Nouns.Renderer (render) where
 
+import           Data.List
 import           Data.Monoid
 import           Data.Function
+import           Data.Maybe
 import           Control.Monad
+import           Control.Applicative
 import qualified Numeric
 import qualified Data.List as List
 import qualified Data.ByteString as ByteString
@@ -17,6 +20,7 @@ import qualified Text.Blaze.Svg.Renderer.Pretty as Pretty
 import qualified Text.Blaze.Svg.Renderer.Utf8 as Utf8
 import qualified Text.Nouns.Renderer.SVG.Attributes as At
 import qualified Text.Nouns.Compiler.Document as D
+import qualified Text.Nouns.Compiler.Document.Color as Color
 
 class Renderable a where
   renderToInlineSvg :: a -> InlineSvg
@@ -45,6 +49,9 @@ instance Monoid InlineSvg where
           Just def -> def : defs
           Nothing -> defs
 
+(??) :: InlineSvg -> [InlineAttribute] -> InlineSvg
+inlineSvg ?? attrs = foldl' (?) inlineSvg attrs
+
 inline :: Svg -> InlineSvg
 inline = InlineSvg []
 
@@ -65,13 +72,13 @@ instance Renderable D.Element where
     ! At.width w
     ! At.height h
     ! At.rx radius
-    ? fillAttr fill
+    ?? fillAttrs fill
 
   renderToInlineSvg (D.Circle cx cy r fill) = inline SVG.circle
     ! At.cx cx
     ! At.cy cy
     ! At.r r
-    ? fillAttr fill
+    ?? fillAttrs fill
 
   renderToInlineSvg (D.Image x y w h file) = inline SVG.image
     ! At.x x
@@ -83,7 +90,7 @@ instance Renderable D.Element where
 
   renderToInlineSvg (D.Path fill commands) = inline SVG.path
     ! At.d (concatMap renderPathCommand commands)
-    ? fillAttr fill
+    ?? fillAttrs fill
 
   renderToInlineSvg (D.Group members) = InlineSvg defs (SVG.g innerSvg)
     where InlineSvg defs innerSvg = renderToInlineSvg members
@@ -113,9 +120,11 @@ svgAttr attrFn x = InlineAttribute (Just (uniqueId, svg')) $ attrFn (Blaze.strin
         uniqueId = List.foldl' (flip Numeric.showHex) "" $ ByteString.unpack sha
         sha = SHA1.hashlazy (Utf8.renderSvg svg)
 
-fillAttr :: D.Paint -> InlineAttribute
-fillAttr (D.ColorPaint color) = strAttr SVG.At.fill (show color)
-fillAttr (D.GradientPaint gradient) = svgAttr SVG.At.fill gradient
+fillAttrs :: D.Paint -> [InlineAttribute]
+fillAttrs (D.GradientPaint gradient) = [ svgAttr SVG.At.fill gradient ]
+fillAttrs (D.ColorPaint color) = fillAttr : maybeToList opacityAttr
+  where fillAttr = strAttr SVG.At.fill ('#' : Color.toRGBHex color)
+        opacityAttr = InlineAttribute Nothing . At.fillOpacity <$> Color.alpha color
 
 renderPathCommand :: D.PathCommand -> String
 renderPathCommand command = unwords $ case command of

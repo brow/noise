@@ -5,6 +5,7 @@ module Text.Nouns.Compiler.Document
 , Length
 , Color
 , IRI
+, OpacityValue
 , Paint(..)
 , Gradient(..)
 , Document(..)
@@ -29,6 +30,8 @@ type Length = Number
 type Coordinate = Length
 
 type IRI = URI.URI
+
+type OpacityValue = Number
 
 showFuncIRI :: IRI -> String
 showFuncIRI iri = "url(" ++ show iri ++ ")"

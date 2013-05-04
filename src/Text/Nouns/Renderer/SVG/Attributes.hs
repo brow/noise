@@ -57,3 +57,6 @@ d = SVG.d . stringValue
 
 preserveaspectratio :: String -> Attribute
 preserveaspectratio = SVG.preserveaspectratio . stringValue
+
+fillOpacity :: D.OpacityValue -> Attribute
+fillOpacity = SVG.fillOpacity . stringValue . show

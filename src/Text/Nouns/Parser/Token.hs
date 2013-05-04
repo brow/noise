@@ -3,7 +3,7 @@ module Text.Nouns.Parser.Token
 , ranged
 , identifier
 , number
-, hexRGB
+, hexLiteral
 , stringLiteral
 , whiteSpace
 , parens
@@ -58,8 +58,8 @@ number :: Parser Double
 number = try float
          <|> fmap fromInteger integer
 
-hexRGB :: Parser String
-hexRGB = lexeme (char '#' >> count 6 hexDigit)
+hexLiteral :: Int -> Parser String
+hexLiteral nDigits = lexeme (char '#' >> count nDigits hexDigit)
 
 stringLiteral :: Parser String
 stringLiteral = lexeme Internal.stringLiteral

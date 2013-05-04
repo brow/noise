@@ -50,6 +50,10 @@ test_trailing_comma = assertOutputElement
   (D.Circle 1 2 3 $ colorPaint "000000")
   "shape.circle(1,2,3,)"
 
+test_argb_literal = assertOutputElement
+  (D.Circle 1 2 3 $ colorPaint "abcdef12")
+  "shape.circle(1,2,3,fill:#abcdef12)"
+
 test_ranges = assertAST
   (AST.SourceFile
     [AST.DefinitionStatement

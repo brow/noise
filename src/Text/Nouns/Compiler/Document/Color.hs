@@ -48,7 +48,7 @@ fromHex [r0,r1,g0,g1,b0,b1] = RGB
   <*> readHexByte [b0,b1]
 fromHex _ = Nothing
 
-alpha :: Color -> Maybe Float
+alpha :: Color -> Maybe Double
 alpha (ARGB a _ _ _) = Just (fromIntegral a / 255.0)
 alpha _              = Nothing
 
