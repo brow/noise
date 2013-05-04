@@ -47,7 +47,7 @@ test_expecting_statement = assertError
   "group with "
 
 test_invalid_malformed_color_literal = mapM
-  (assertError "Unexpected color format. Expecting form RRGGBB or AARRGGBB.")
+  (assertError "Unexpected color format. Expecting hex color of form RRGGBB or AARRGGBB.")
   [ "#abc"
   , "#abcdef1"
   , "#abcdef12345" ]

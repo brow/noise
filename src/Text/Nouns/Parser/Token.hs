@@ -60,14 +60,12 @@ number = try float
          <|> fmap fromInteger integer
 
 colorLiteral :: Parser String
-colorLiteral = lexeme $ do
-  char '#'
-  (try $ do
-    str <- many hexDigit
-    unless
-      (length str `elem` [6,8])
-      (unexpected "color format")
-    return str) <?> "form RRGGBB or AARRGGBB"
+colorLiteral = lexeme (char '#' >> colorStr)
+  where colorStr = try hexColorStr <?> "hex color of form RRGGBB or AARRGGBB"
+        hexColorStr = do
+          str <- many hexDigit
+          unless (length str `elem` [6,8]) (unexpected "color format")
+          return str
 
 stringLiteral :: Parser String
 stringLiteral = lexeme Internal.stringLiteral
