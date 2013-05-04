@@ -2,7 +2,8 @@
 
 module Text.Nouns.Renderer (render) where
 
-import           Data.List
+import           Prelude hiding ((!!))
+import           Data.List hiding ((!!))
 import           Data.Monoid
 import           Data.Function
 import           Data.Maybe
@@ -48,6 +49,9 @@ instance Monoid InlineSvg where
         defs' = case attrDef of
           Just def -> def : defs
           Nothing -> defs
+
+(!!) :: Svg -> [SVG.Attribute] -> Svg
+svg !! attrs = foldl' (!) svg attrs
 
 (??) :: InlineSvg -> [InlineAttribute] -> InlineSvg
 inlineSvg ?? attrs = foldl' (?) inlineSvg attrs
@@ -99,7 +103,7 @@ instance Renderable D.Gradient where
   renderToSvg gradient = svgGradient $ forM_ (D.stops gradient) $ \(offset, color) ->
     SVG.stop
       ! At.offset offset
-      ! At.stopColor color
+      !! stopColorAttrs color
     where
       svgGradient = case gradient of
         (D.RadialGradient _ ) -> SVG.radialgradient
@@ -109,14 +113,8 @@ instance Renderable D.Gradient where
             ! At.x2 (cos radians)
             ! At.y2 (sin radians)
 
-strAttr :: (SVG.AttributeValue -> SVG.Attribute) -> String -> InlineAttribute
-strAttr attrFn = InlineAttribute Nothing . attrFn . Blaze.stringValue
-
-colorAttr :: (SVG.AttributeValue -> SVG.Attribute) -> D.Color -> InlineAttribute
-colorAttr attrFn = strAttr attrFn . ('#' :) . Color.toRGBHex
-
-opacityAttr :: (SVG.AttributeValue -> SVG.Attribute) -> D.OpacityValue -> InlineAttribute
-opacityAttr attrFn = InlineAttribute Nothing . attrFn . Blaze.stringValue . show
+colorValue :: D.Color -> SVG.AttributeValue
+colorValue = Blaze.stringValue . ('#' :) . Color.toRGBHex
 
 svgAttr :: (Renderable a) => (SVG.AttributeValue -> SVG.Attribute) -> a -> InlineAttribute
 svgAttr attrFn x = InlineAttribute (Just (uniqueId, svg')) $ attrFn (Blaze.stringValue funcIRI)
@@ -128,9 +126,14 @@ svgAttr attrFn x = InlineAttribute (Just (uniqueId, svg')) $ attrFn (Blaze.strin
 
 fillAttrs :: D.Paint -> [InlineAttribute]
 fillAttrs (D.GradientPaint gradient) = [ svgAttr SVG.At.fill gradient ]
-fillAttrs (D.ColorPaint color) = fillAttr : maybeToList fillOpacityAttr
-  where fillOpacityAttr = opacityAttr SVG.At.fillOpacity <$> Color.alpha color
-        fillAttr = colorAttr SVG.At.fill color
+fillAttrs (D.ColorPaint color) = map (InlineAttribute Nothing) (fillAttr : maybeToList fillOpacityAttr)
+  where fillOpacityAttr = At.fillOpacity <$> Color.alpha color
+        fillAttr = SVG.At.fill (colorValue color)
+
+stopColorAttrs :: D.Color -> [SVG.Attribute]
+stopColorAttrs color = stopColorAttr : maybeToList stopOpacityAttr
+  where stopOpacityAttr = At.stopOpacity <$> Color.alpha color
+        stopColorAttr = SVG.At.stopColor (colorValue color)
 
 renderPathCommand :: D.PathCommand -> String
 renderPathCommand command = unwords $ case command of

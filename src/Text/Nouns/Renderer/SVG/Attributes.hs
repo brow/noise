@@ -31,9 +31,6 @@ rx = SVG.rx . stringValue . show
 offset :: D.Number -> Attribute
 offset = SVG.offset . stringValue . show
 
-stopColor :: D.Color -> Attribute
-stopColor = SVG.stopColor . stringValue . show
-
 id :: String -> Attribute
 id = SVG.id_ . stringValue
 
@@ -60,3 +57,6 @@ preserveaspectratio = SVG.preserveaspectratio . stringValue
 
 fillOpacity :: D.OpacityValue -> Attribute
 fillOpacity = SVG.fillOpacity . stringValue . show
+
+stopOpacity :: D.OpacityValue -> Attribute
+stopOpacity = SVG.stopOpacity . stringValue . show
