@@ -5,22 +5,23 @@ module Text.Nouns.Compiler.Document.Color
 , black
 ) where
 
+import Data.Word
 import Numeric (showHex, readHex)
 import Control.Applicative
 
-data Color = ARGB Int Int Int Int
-           | RGB Int Int Int
+data Color = ARGB Word8 Word8 Word8 Word8
+           | RGB Word8 Word8 Word8
            deriving (Eq)
 
 instance Show Color where
   show = ('#':) . toHex
 
-showHexByte :: Int -> String
-showHexByte = pad . flip showHex "" . (`mod` 256)
+showHexByte :: Word8 -> String
+showHexByte = pad . flip showHex ""
   where pad [x] = ['0', x]
         pad xs  = xs
 
-readHexByte :: String -> Maybe Int
+readHexByte :: String -> Maybe Word8
 readHexByte str@[_,_] = case readHex str of
   [(i,"")] -> Just i
   _        -> Nothing
