@@ -112,6 +112,12 @@ instance Renderable D.Gradient where
 strAttr :: (SVG.AttributeValue -> SVG.Attribute) -> String -> InlineAttribute
 strAttr attrFn = InlineAttribute Nothing . attrFn . Blaze.stringValue
 
+colorAttr :: (SVG.AttributeValue -> SVG.Attribute) -> D.Color -> InlineAttribute
+colorAttr attrFn = strAttr attrFn . ('#' :) . Color.toRGBHex
+
+opacityAttr :: (SVG.AttributeValue -> SVG.Attribute) -> D.OpacityValue -> InlineAttribute
+opacityAttr attrFn = InlineAttribute Nothing . attrFn . Blaze.stringValue . show
+
 svgAttr :: (Renderable a) => (SVG.AttributeValue -> SVG.Attribute) -> a -> InlineAttribute
 svgAttr attrFn x = InlineAttribute (Just (uniqueId, svg')) $ attrFn (Blaze.stringValue funcIRI)
   where svg = renderToSvg x
@@ -122,9 +128,9 @@ svgAttr attrFn x = InlineAttribute (Just (uniqueId, svg')) $ attrFn (Blaze.strin
 
 fillAttrs :: D.Paint -> [InlineAttribute]
 fillAttrs (D.GradientPaint gradient) = [ svgAttr SVG.At.fill gradient ]
-fillAttrs (D.ColorPaint color) = fillAttr : maybeToList opacityAttr
-  where fillAttr = strAttr SVG.At.fill ('#' : Color.toRGBHex color)
-        opacityAttr = InlineAttribute Nothing . At.fillOpacity <$> Color.alpha color
+fillAttrs (D.ColorPaint color) = fillAttr : maybeToList fillOpacityAttr
+  where fillOpacityAttr = opacityAttr SVG.At.fillOpacity <$> Color.alpha color
+        fillAttr = colorAttr SVG.At.fill color
 
 renderPathCommand :: D.PathCommand -> String
 renderPathCommand command = unwords $ case command of
