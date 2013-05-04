@@ -33,7 +33,7 @@ data FunctionPrototype = FunctionPrototype QualifiedIdentifier [ArgumentPrototyp
 data ArgumentPrototype = RequiredArgumentPrototype Identifier SourceRange deriving (Show, Eq)
 
 data Expression = FloatLiteral Double SourceRange
-                | HexRGBLiteral String SourceRange
+                | ColorLiteral String SourceRange
                 | StringLiteral String SourceRange
                 | FunctionCall QualifiedIdentifier [Argument] (Maybe Block) SourceRange
                 deriving (Show, Eq)
@@ -52,7 +52,7 @@ instance HasSourceRange QualifiedIdentifier where
 
 instance HasSourceRange Expression where
   rangeInSource (FloatLiteral _ r) = r
-  rangeInSource (HexRGBLiteral _ r) = r
+  rangeInSource (ColorLiteral _ r) = r
   rangeInSource (StringLiteral _ r) = r
   rangeInSource (FunctionCall _ _ _ r) = r
 

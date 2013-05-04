@@ -22,8 +22,8 @@ qualifiedIdentifier = ranged
 floatLiteral :: Parser AST.Expression
 floatLiteral = ranged (AST.FloatLiteral <$> Token.number)
 
-hexRGBLiteral :: Parser AST.Expression
-hexRGBLiteral = ranged $ fmap AST.HexRGBLiteral $
+colorLiteral :: Parser AST.Expression
+colorLiteral = ranged $ fmap AST.ColorLiteral $
   try (Token.hexLiteral 8) <|> Token.hexLiteral 6
 
 stringLiteral :: Parser AST.Expression
@@ -42,7 +42,7 @@ block = ranged $ AST.Block
   <*> reserved "end"
 
 expression :: Parser AST.Expression
-expression = hexRGBLiteral
+expression = colorLiteral
          <|> floatLiteral
          <|> stringLiteral
          <|> functionCall

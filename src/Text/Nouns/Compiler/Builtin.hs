@@ -42,7 +42,7 @@ circle = fmap F.ElementValue $ D.Circle
   <*> acceptArg "fill" D.black
 
 color :: String -> Function F.Value
-color = return . F.RGBValue
+color = return . F.ColorValue
 
 requireGradientColorArgs :: Function [(D.Number,D.Color)]
 requireGradientColorArgs = do

@@ -21,7 +21,7 @@ import qualified Text.Nouns.Compiler.Document.Color as Color
 type Keyword = String
 
 data Value = FloatValue Double
-           | RGBValue String
+           | ColorValue String
            | StringValue String
            | ElementValue D.Element
            | GradientValue D.Gradient
@@ -67,12 +67,12 @@ instance FromValue D.Number where
   fromValue _ = Nothing
 
 instance FromValue D.Paint where
-  fromValue (RGBValue x) = D.ColorPaint <$> Color.fromHex x
+  fromValue (ColorValue x) = D.ColorPaint <$> Color.fromHex x
   fromValue (GradientValue x) = Just (D.GradientPaint x)
   fromValue _ = Nothing
 
 instance FromValue D.Color where
-  fromValue (RGBValue x) = Color.fromHex x
+  fromValue (ColorValue x) = Color.fromHex x
   fromValue _ = Nothing
 
 instance FromValue D.IRI where

@@ -72,7 +72,7 @@ duplicatesBy cmp (x:xs) =
 
 evaluate :: Definitions -> AST.Expression -> Compiled F.Value
 evaluate _ (AST.FloatLiteral x _)  = return (F.FloatValue x)
-evaluate _ (AST.HexRGBLiteral x _) = return (F.RGBValue x)
+evaluate _ (AST.ColorLiteral x _)  = return (F.ColorValue x)
 evaluate _ (AST.StringLiteral x _) = return (F.StringValue x)
 evaluate defs (AST.FunctionCall identifier args block _) = do
   function <- lookUpFunction defs identifier
