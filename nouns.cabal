@@ -11,31 +11,54 @@ category:            Text
 build-type:          Simple
 cabal-version:       >=1.8
 
+library
+  hs-source-dirs: src
+  build-depends:
+    base ==4.5.*,
+    blaze-markup ==0.5.*,
+    blaze-svg ==0.3.*,
+    bytestring ==0.9.*,
+    containers ==0.4.*,
+    cryptohash ==0.8.*,
+    network ==2.3.*,
+    parsec ==3.1.*
+  exposed-modules:
+    Text.Nouns.Compiler
+    Text.Nouns.Compiler.Document
+    Text.Nouns.Compiler.Document.Color
+    Text.Nouns.Error
+    Text.Nouns.Parser
+    Text.Nouns.Parser.AST
+    Text.Nouns.Parser.Character
+    Text.Nouns.Renderer
+    Text.Nouns.SourceRange
+  other-modules:
+    Text.Nouns.Compiler.Builtin
+    Text.Nouns.Compiler.Error
+    Text.Nouns.Compiler.Function
+    Text.Nouns.Parser.Token.Internal
+    Text.Nouns.Parser.Language
+    Text.Nouns.Parser.Token
+    Text.Nouns.Renderer.SVG.Attributes
+
 executable nouns
   ghc-options: -Wall
-  hs-source-dirs: src
+  hs-source-dirs: src-cli
   main-is: Main.hs
   build-depends:
     base ==4.5.*,
-    parsec ==3.1.*,
-    blaze-svg ==0.3.*,
-    blaze-markup ==0.5.*,
-    cryptohash ==0.8.*,
-    bytestring ==0.9.*,
-    network ==2.3.*,
-    containers ==0.4.*
+    nouns
 
 test-suite test
   ghc-options: -Wall
   type: exitcode-stdio-1.0
-  hs-source-dirs: tests src
+  hs-source-dirs: tests
   main-is: Main.hs
   build-depends:
-    base ==4.5.*,
-    parsec ==3.1.*,
-    network ==2.3.*,
-    containers ==0.4.*,
     HTF ==0.10.*,
     HUnit ==1.2.*,
     QuickCheck ==2.5.*,
-    string-qq ==0.0.*
+    base ==4.5.*,
+    parsec ==3.1.*,
+    string-qq ==0.0.*,
+    nouns
