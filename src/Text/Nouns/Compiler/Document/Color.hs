@@ -8,7 +8,9 @@ module Text.Nouns.Compiler.Document.Color
 import Numeric (showHex, readHex)
 import Control.Applicative
 
-data Color = RGB Int Int Int deriving (Eq)
+data Color = ARGB Int Int Int Int
+           | RGB Int Int Int
+           deriving (Eq)
 
 instance Show Color where
   show = ('#':) . toHex
@@ -25,9 +27,16 @@ readHexByte str@[_,_] = case readHex str of
 readHexByte _ = Nothing
 
 toHex :: Color -> String
-toHex (RGB r g b) = concatMap showHexByte [r, g, b]
+toHex color = concatMap showHexByte $ case color of
+  ARGB a r g b -> [a ,r, g, b]
+  RGB r g b    -> [r, g, b]
 
 fromHex :: String -> Maybe Color
+fromHex [a0,a1,r0,r1,g0,g1,b0,b1] = ARGB
+  <$> readHexByte [a0,a1]
+  <*> readHexByte [r0,r1]
+  <*> readHexByte [g0,g1]
+  <*> readHexByte [b0,b1]
 fromHex [r0,r1,g0,g1,b0,b1] = RGB
   <$> readHexByte [r0,r1]
   <*> readHexByte [g0,g1]

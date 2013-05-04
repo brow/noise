@@ -12,7 +12,10 @@ import qualified Text.Nouns.Compiler.Document.Color as Color
 newtype HexColorString = HexColorString String deriving (Show)
 
 instance Arbitrary HexColorString where
-  arbitrary = HexColorString <$> vectorOf 6 (elements "0123456789abcdef")
+  arbitrary = do
+    len <- elements [6, 8]
+    let hexDigits = elements "0123456789abcdef"
+    HexColorString <$> vectorOf len hexDigits
 
 prop_toHex_is_inverse_of_fromHex :: HexColorString -> Bool
 prop_toHex_is_inverse_of_fromHex (HexColorString hexStr) =
