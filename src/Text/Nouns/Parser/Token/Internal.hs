@@ -26,6 +26,8 @@ import Text.Parsec.Token
   )
 import qualified Text.Nouns.Parser.Language
 
+{-# ANN module "HLint: ignore" #-}
+
 languageDef = Text.Nouns.Parser.Language.def
 
 float           = floating   <?> "float"
