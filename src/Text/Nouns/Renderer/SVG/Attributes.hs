@@ -1,5 +1,6 @@
 module Text.Nouns.Renderer.SVG.Attributes where
 
+import Numeric
 import Text.Blaze.Internal (Attribute, stringValue)
 import qualified Text.Blaze.Svg11.Attributes as SVG
 import qualified Text.Nouns.Compiler.Document as D
@@ -56,7 +57,10 @@ preserveaspectratio :: String -> Attribute
 preserveaspectratio = SVG.preserveaspectratio . stringValue
 
 fillOpacity :: D.OpacityValue -> Attribute
-fillOpacity = SVG.fillOpacity . stringValue . show
+fillOpacity = SVG.fillOpacity . stringValue . showTo3Places
 
 stopOpacity :: D.OpacityValue -> Attribute
-stopOpacity = SVG.stopOpacity . stringValue . show
+stopOpacity = SVG.stopOpacity . stringValue . showTo3Places
+
+showTo3Places :: D.OpacityValue -> String
+showTo3Places = flip (showFFloat (Just 3)) ""
