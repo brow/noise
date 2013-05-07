@@ -57,10 +57,12 @@ preserveaspectratio :: String -> Attribute
 preserveaspectratio = SVG.preserveaspectratio . stringValue
 
 fillOpacity :: D.OpacityValue -> Attribute
-fillOpacity = SVG.fillOpacity . stringValue . showTo3Places
+fillOpacity = SVG.fillOpacity . stringValue . showOpacityValue
 
 stopOpacity :: D.OpacityValue -> Attribute
-stopOpacity = SVG.stopOpacity . stringValue . showTo3Places
+stopOpacity = SVG.stopOpacity . stringValue . showOpacityValue
 
-showTo3Places :: D.OpacityValue -> String
-showTo3Places = flip (showFFloat (Just 3)) ""
+-- Contrary to the SVG 1.1 standard, WebKit doesn't handle scientific
+-- notation in presentation attributes correctly. Use decimal notation.
+showOpacityValue :: D.OpacityValue -> String
+showOpacityValue = flip (showFFloat Nothing) ""
