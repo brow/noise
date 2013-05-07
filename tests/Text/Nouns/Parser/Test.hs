@@ -29,9 +29,10 @@ colorPaint = D.ColorPaint . color
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
-test_expecting_argument = assertError
-  "Unexpected end of input. Expecting argument or \")\"."
-  "foo("
+test_expecting_argument = mapM
+  (assertError "Unexpected end of input. Expecting argument or \")\".")
+  [ "foo("
+  , "foo(bar," ]
 
 test_expecting_identifier = assertError
   "Unexpected end of input. Expecting identifier."
@@ -40,13 +41,14 @@ test_expecting_identifier = assertError
 test_expecting_expression = mapM
   (assertError "Unexpected end of input. Expecting expression.")
   [ "let foo ="
+  , "foo +"
   , "fn(foo:" ]
 
 test_expecting_statement = assertError
   "Unexpected end of input. Expecting statement or \"end\"."
   "group with "
 
-test_invalid_malformed_color_literal = mapM
+test_malformed_color_literal = mapM
   (assertError "Unexpected color format. Expecting hex color of form RRGGBB or AARRGGBB.")
   [ "#abc"
   , "#abcdef1"

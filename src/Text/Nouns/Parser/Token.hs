@@ -11,6 +11,7 @@ module Text.Nouns.Parser.Token
 , dot
 , symbol
 , reserved
+, reservedOp
 ) where
 
 import Control.Monad
@@ -83,4 +84,7 @@ symbol :: String -> Parser String
 symbol = lexeme . string
 
 reserved :: String -> Parser ()
-reserved name = lexeme $ Internal.reserved name
+reserved = lexeme . Internal.reserved
+
+reservedOp :: String -> Parser ()
+reservedOp = lexeme . Internal.reservedOp

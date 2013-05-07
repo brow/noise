@@ -7,6 +7,7 @@ module Text.Nouns.Parser.Token.Internal
 , integer
 , stringLiteral
 , reserved
+, reservedOp
 ) where
 
 import Data.Char ( isAlpha, toLower, toUpper, isSpace, digitToInt )
@@ -23,6 +24,7 @@ import Text.Parsec.Token
   , commentLine
   , nestedComments
   , commentEnd
+  , opLetter
   )
 import qualified Text.Nouns.Parser.Language
 
@@ -254,3 +256,9 @@ inCommentSingle
     <?> "end of comment"
     where
       startEnd   = nub (commentEnd languageDef ++ commentStart languageDef)
+
+reservedOp name =
+    try $
+    do{ string name
+      ; notFollowedBy (opLetter languageDef) <?> ("end of " ++ show name)
+      }

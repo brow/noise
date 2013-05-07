@@ -77,3 +77,15 @@ test_argument_shadows_function = assertOutputElement
   [s|let x = #abcdef
      let f(x) = x
      shape.circle(1, 2, 3, f(#123456))|]
+
+test_operators = assertOutputElement
+  (D.Rectangle (1+2) (3-4) (5*6) (7/8) 0 $ colorPaint "000000")
+  [s|shape.rectangle(1+2, 3-4, 5*6, 7/8)|]
+
+test_operators_associativity = assertOutputElement
+  (D.Rectangle (1-2-3) (4/5/6) (1-2+3) (4/5*6) 0 $ colorPaint "000000")
+  [s|shape.rectangle(1-2-3, 4/5/6, 1-2+3, 4/5*6)|]
+
+test_operators_precedence = assertOutputElement
+  (D.Rectangle (2+3*4) (2+3/4) (2-3*4) (2-3/4) 0 $ colorPaint "000000")
+  [s|shape.rectangle(2+3*4, 2+3/4, 2-3*4, 2-3/4)|]

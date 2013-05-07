@@ -22,6 +22,7 @@ data CompileError = FunctionCallError AST.QualifiedIdentifier FunctionError
                   | PositionalArgumentError AST.Argument
                   | DuplicatedArgumentPrototypeError AST.ArgumentPrototype
                   | DuplicatedKeywordArgumentError AST.Argument
+                  | OperandTypeError AST.Expression
                   deriving (Show, Eq)
 
 instance HasSourceRange CompileError where
@@ -33,8 +34,9 @@ instance HasSourceRange CompileError where
     PositionalArgumentError arg -> rangeInSource arg
     FunctionCallError _ (CompileError err') -> rangeInSource err'
     FunctionCallError fnCall _ -> rangeInSource fnCall
-instance Error.Error CompileError where
+    OperandTypeError expression -> rangeInSource expression
 
+instance Error.Error CompileError where
   message err =
     let showDotSyntax (AST.QualifiedIdentifier path _) = List.intercalate "." path
         showArgPrototypeName (AST.RequiredArgumentPrototype name _) = name
@@ -51,6 +53,8 @@ instance Error.Error CompileError where
         "Duplicate argument \"" ++ showArgPrototypeName arg ++ "\" in function definition."
       DuplicatedKeywordArgumentError arg ->
         "Duplicate keyword argument \"" ++ showArgName arg ++ "\" in function call."
+      OperandTypeError _ ->
+        "Operand is not a number."
       FunctionCallError identifier fnCallErr -> case fnCallErr of
         RedundantKeywordArgError keyword ->
           "Keyword argument \"" ++ keyword ++ "\" duplicates a positional argument."

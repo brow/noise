@@ -7,6 +7,7 @@ import Control.Applicative
 import Text.ParserCombinators.Parsec (ParseError, sepBy1, eof, option)
 import Text.Parsec.Prim (try, (<?>))
 import Text.Parsec.Pos (initialPos)
+import qualified Text.Parsec.Expr as Expr
 import qualified Text.Parsec.Prim (runParser)
 import Text.Nouns.Parser.Token (Parser, ranged)
 import qualified Text.Nouns.Parser.Token as Token
@@ -40,12 +41,24 @@ block = ranged $ AST.Block
   <*> many statement
   <*> reserved "end"
 
+operator :: AST.Operator -> Parser AST.Operator
+operator op = Token.reservedOp str >> return op
+  where str = case op of
+          AST.Add -> "+"
+          AST.Sub -> "-"
+          AST.Mul -> "*"
+          AST.Div -> "/"
+
 expression :: Parser AST.Expression
-expression = colorLiteral
-         <|> floatLiteral
-         <|> stringLiteral
-         <|> functionCall
-         <?> "expression"
+expression = Expr.buildExpressionParser opTable term
+  where opTable = [ [infixLeft AST.Mul, infixLeft AST.Div]
+                  , [infixLeft AST.Add, infixLeft AST.Sub] ]
+        infixLeft op = Expr.Infix (AST.Operation <$> operator op) Expr.AssocLeft
+        term = colorLiteral
+           <|> floatLiteral
+           <|> stringLiteral
+           <|> functionCall
+           <?> "expression"
 
 expressionStatement :: Parser AST.Statement
 expressionStatement = AST.ExpressionStatement <$> expression

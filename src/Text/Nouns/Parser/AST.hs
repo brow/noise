@@ -3,6 +3,7 @@ module Text.Nouns.Parser.AST
 , QualifiedIdentifier(..)
 , Identifier
 , IdentifierPath
+, Operator(..)
 , Argument(..)
 , Expression(..)
 , Statement(..)
@@ -20,6 +21,8 @@ data QualifiedIdentifier = QualifiedIdentifier IdentifierPath SourceRange derivi
 
 type Identifier = String
 
+data Operator = Add | Sub | Mul | Div deriving (Show, Eq)
+
 type IdentifierPath = [Identifier]
 
 data Reserved = Reserved String SourceRange deriving (Show, Eq)
@@ -36,6 +39,7 @@ data Expression = FloatLiteral Double SourceRange
                 | ColorLiteral String SourceRange
                 | StringLiteral String SourceRange
                 | FunctionCall QualifiedIdentifier [Argument] (Maybe Block) SourceRange
+                | Operation Operator Expression Expression
                 deriving (Show, Eq)
 
 data Argument = KeywordArgument Identifier Expression SourceRange
@@ -55,6 +59,7 @@ instance HasSourceRange Expression where
   rangeInSource (ColorLiteral _ r) = r
   rangeInSource (StringLiteral _ r) = r
   rangeInSource (FunctionCall _ _ _ r) = r
+  rangeInSource (Operation _ e0 e1) = (fst (rangeInSource e0), snd (rangeInSource e1))
 
 instance HasSourceRange Argument where
   rangeInSource (KeywordArgument _ _ r) = r

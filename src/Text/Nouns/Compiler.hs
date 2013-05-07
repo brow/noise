@@ -81,6 +81,22 @@ evaluate defs (AST.FunctionCall identifier args block _) = do
   case F.call function posArgs kwArgs blockArgs of
     Left callError -> throw (FunctionCallError identifier callError)
     Right value    -> return value
+evaluate defs (AST.Operation op left right) =
+  fmap F.FloatValue $ operationFn
+    <$> evaluateOperand defs left
+    <*> evaluateOperand defs right
+  where operationFn = case op of
+          AST.Add -> (+)
+          AST.Sub -> (-)
+          AST.Mul -> (*)
+          AST.Div -> (/)
+
+evaluateOperand :: Definitions -> AST.Expression -> Compiled Double
+evaluateOperand defs expression = do
+  value <- evaluate defs expression
+  case F.fromValue value of
+    Just x  -> return x
+    Nothing -> throw (OperandTypeError expression)
 
 evaluateBlock :: Definitions -> Maybe AST.Block -> Compiled [F.Value]
 evaluateBlock _ Nothing = return []

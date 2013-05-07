@@ -16,5 +16,5 @@ def = Parsec.Token.LanguageDef
   , opStart = parserZero
   , opLetter = parserZero
   , reservedNames = ["let", "with", "end"]
-  , reservedOpNames = []
+  , reservedOpNames = ["+", "-", "*", "/"]
   , caseSensitive = True }
