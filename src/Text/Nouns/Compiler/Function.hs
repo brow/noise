@@ -20,7 +20,7 @@ import qualified Text.Nouns.Compiler.Document.Color as Color
 
 type Keyword = String
 
-data Value = FloatValue Double
+data Value = NumberValue D.Number
            | ColorValue String
            | StringValue String
            | ElementValue D.Element
@@ -63,7 +63,7 @@ instance FromValue Value where
   fromValue = Just
 
 instance FromValue D.Number where
-  fromValue (FloatValue x) = Just x
+  fromValue (NumberValue x) = Just x
   fromValue _ = Nothing
 
 instance FromValue D.Paint where

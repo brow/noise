@@ -71,7 +71,7 @@ duplicatesBy cmp (x:xs) =
   filter (cmp x) xs ++ duplicatesBy cmp (List.deleteBy cmp x xs)
 
 evaluate :: Definitions -> AST.Expression -> Compiled F.Value
-evaluate _ (AST.FloatLiteral x _)  = return (F.FloatValue x)
+evaluate _ (AST.FloatLiteral x _)  = return (F.NumberValue x)
 evaluate _ (AST.ColorLiteral x _)  = return (F.ColorValue x)
 evaluate _ (AST.StringLiteral x _) = return (F.StringValue x)
 evaluate defs (AST.FunctionCall identifier args block _) = do
@@ -82,7 +82,7 @@ evaluate defs (AST.FunctionCall identifier args block _) = do
     Left callError -> throw (FunctionCallError identifier callError)
     Right value    -> return value
 evaluate defs (AST.Operation op left right) =
-  fmap F.FloatValue $ operationFn
+  fmap F.NumberValue $ operationFn
     <$> evaluateOperand defs left
     <*> evaluateOperand defs right
   where operationFn = case op of
@@ -91,7 +91,7 @@ evaluate defs (AST.Operation op left right) =
           AST.Mul -> (*)
           AST.Div -> (/)
 
-evaluateOperand :: Definitions -> AST.Expression -> Compiled Double
+evaluateOperand :: Definitions -> AST.Expression -> Compiled D.Number
 evaluateOperand defs expression = do
   value <- evaluate defs expression
   case F.fromValue value of
