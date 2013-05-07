@@ -13,8 +13,8 @@ import Text.Nouns.Parser.Token (Parser, ranged)
 import qualified Text.Nouns.Parser.Token as Token
 import qualified Text.Nouns.Parser.AST as AST
 
-parse :: String -> Either ParseError AST.SourceFile
-parse = Text.Parsec.Prim.runParser sourceFile (initialPos "" ) ""
+parse :: String -> String -> Either ParseError AST.SourceFile
+parse = Text.Parsec.Prim.runParser sourceFile (initialPos "" )
 
 qualifiedIdentifier :: Parser AST.QualifiedIdentifier
 qualifiedIdentifier = ranged

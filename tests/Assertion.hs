@@ -20,7 +20,7 @@ data CompileResult = Output D.Document
                    | ParseError Parser.ParseError
 
 compile :: String -> CompileResult
-compile src = case Parser.parse src of
+compile src = case Parser.parse "" src of
   Left err  -> ParseError err
   Right ast -> case Compiler.compile ast of
     Left err  -> CompileError err

@@ -14,7 +14,7 @@ import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Document.Color as Color
 
 assertAST :: AST.SourceFile -> String -> Assertion
-assertAST ast src = case Parser.parse src of
+assertAST ast src = case Parser.parse "" src of
   Left err -> assertFailure ("parse error: " ++ Error.message err)
   Right ast' -> assertEqual ast ast'
 
