@@ -87,5 +87,6 @@ test_operators_associativity = assertOutputElement
   [s|shape.rectangle(1-2-3, 4/5/6, 1-2+3, 4/5*6)|]
 
 test_operators_precedence = assertOutputElement
-  (D.Rectangle (2+3*4) (2+3/4) (2-3*4) (2-3/4) 0 $ colorPaint "000000")
-  [s|shape.rectangle(2+3*4, 2+3/4, 2-3*4, 2-3/4)|]
+  (D.Rectangle (2+3*4) (2+3/4) (2-3*4) (2-3/4) ((2+3)*4) $ colorPaint "000000")
+  [s|shape.rectangle(2+3*4, 2+3/4, 2-3*4, 2-3/4, (2+3)*4)|]
+

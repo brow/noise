@@ -58,6 +58,7 @@ expression = Expr.buildExpressionParser opTable term
            <|> floatLiteral
            <|> stringLiteral
            <|> functionCall
+           <|> Token.parens expression
            <?> "expression"
 
 expressionStatement :: Parser AST.Statement

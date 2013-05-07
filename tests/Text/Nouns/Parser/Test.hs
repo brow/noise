@@ -42,6 +42,7 @@ test_expecting_expression = mapM
   (assertError "Unexpected end of input. Expecting expression.")
   [ "let foo ="
   , "foo +"
+  , "("
   , "fn(foo:" ]
 
 test_expecting_statement = assertError
