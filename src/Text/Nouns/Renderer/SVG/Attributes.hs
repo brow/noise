@@ -59,6 +59,9 @@ preserveaspectratio = SVG.preserveaspectratio . stringValue
 fillOpacity :: D.OpacityValue -> Attribute
 fillOpacity = SVG.fillOpacity . stringValue . showOpacityValue
 
+strokeOpacity :: D.OpacityValue -> Attribute
+strokeOpacity = SVG.strokeOpacity . stringValue . showOpacityValue
+
 stopOpacity :: D.OpacityValue -> Attribute
 stopOpacity = SVG.stopOpacity . stringValue . showOpacityValue
 

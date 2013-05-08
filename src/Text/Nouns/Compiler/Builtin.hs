@@ -32,14 +32,16 @@ rectangle =  fmap F.ElementValue $ D.Rectangle
   <*> requireArg "width"
   <*> requireArg "height"
   <*> acceptArg "radius" 0
-  <*> acceptArg "fill" D.black
+  <*> acceptArg "fill" D.defaultValue
+  <*> acceptArg "stroke" D.defaultValue
 
 circle :: Function F.Value
 circle = fmap F.ElementValue $ D.Circle
   <$> requireArg "cx"
   <*> requireArg "cy"
   <*> requireArg "radius"
-  <*> acceptArg "fill" D.black
+  <*> acceptArg "fill" D.defaultValue
+  <*> acceptArg "stroke" D.defaultValue
 
 color :: String -> Function F.Value
 color = return . F.ColorValue
@@ -72,7 +74,8 @@ group = fmap F.ElementValue $ D.Group
 
 path :: Function F.Value
 path = fmap F.ElementValue  $ D.Path
-  <$> acceptArg "fill" D.black
+  <$> acceptArg "fill" D.defaultValue
+  <*> acceptArg "stroke" D.defaultValue
   <*> acceptBlockArgs
 
 pathMove :: Function F.Value

@@ -56,12 +56,12 @@ test_malformed_color_literal = mapM
   , "#abcdef12345" ]
 
 test_trailing_comma = assertOutputElement
-  (D.Circle 1 2 3 $ colorPaint "000000")
-  "shape.circle(1,2,3,)"
+  D.circle
+  "shape.circle(0,0,0,)"
 
 test_argb_literal = assertOutputElement
-  (D.Circle 1 2 3 $ colorPaint "abcdef12")
-  "shape.circle(1,2,3,fill:#abcdef12)"
+  D.circle { D.fill = colorPaint "abcdef12" }
+  "shape.circle(0,0,0,fill:#abcdef12)"
 
 test_ranges = assertAST
   (AST.SourceFile

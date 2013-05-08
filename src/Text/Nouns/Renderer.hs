@@ -70,19 +70,21 @@ instance Renderable D.Document where
     SVG.docTypeSvg $ uninline $ mconcat $ map renderToInlineSvg elems
 
 instance Renderable D.Element where
-  renderToInlineSvg (D.Rectangle x y w h radius fill) = inline SVG.rect
+  renderToInlineSvg (D.Rectangle x y w h radius fill stroke) = inline SVG.rect
     ! At.x x
     ! At.y y
     ! At.width w
     ! At.height h
     ! At.rx radius
     ?? fillAttrs fill
+    ?? strokeAttrs stroke
 
-  renderToInlineSvg (D.Circle cx cy r fill) = inline SVG.circle
+  renderToInlineSvg (D.Circle cx cy r fill stroke) = inline SVG.circle
     ! At.cx cx
     ! At.cy cy
     ! At.r r
     ?? fillAttrs fill
+    ?? strokeAttrs stroke
 
   renderToInlineSvg (D.Image x y w h file) = inline SVG.image
     ! At.x x
@@ -92,9 +94,10 @@ instance Renderable D.Element where
     ! At.xlinkHref file
     ! At.preserveaspectratio "none"
 
-  renderToInlineSvg (D.Path fill commands) = inline SVG.path
+  renderToInlineSvg (D.Path fill stroke commands) = inline SVG.path
     ! At.d (concatMap renderPathCommand commands)
     ?? fillAttrs fill
+    ?? strokeAttrs stroke
 
   renderToInlineSvg (D.Group members) = InlineSvg defs (SVG.g innerSvg)
     where InlineSvg defs innerSvg = renderToInlineSvg members
@@ -124,11 +127,21 @@ svgAttr attrFn x = InlineAttribute (Just (uniqueId, svg')) $ attrFn (Blaze.strin
         uniqueId = List.foldl' (flip Numeric.showHex) "" $ ByteString.unpack sha
         sha = SHA1.hashlazy (Utf8.renderSvg svg)
 
+paintAttrs :: (SVG.AttributeValue -> SVG.Attribute)
+           -> (D.OpacityValue -> SVG.Attribute)
+           -> D.Paint
+           -> [InlineAttribute]
+paintAttrs paintServerAttrFn opacityAttrFn paint = case paint of
+  D.GradientPaint gradient -> [ svgAttr paintServerAttrFn gradient ]
+  D.ColorPaint color       -> map (InlineAttribute Nothing) (paintServerAttr : maybeToList opacityAttr)
+    where opacityAttr = opacityAttrFn <$> Color.alpha color
+          paintServerAttr = paintServerAttrFn (colorValue color)
+
 fillAttrs :: D.Paint -> [InlineAttribute]
-fillAttrs (D.GradientPaint gradient) = [ svgAttr SVG.At.fill gradient ]
-fillAttrs (D.ColorPaint color) = map (InlineAttribute Nothing) (fillAttr : maybeToList fillOpacityAttr)
-  where fillOpacityAttr = At.fillOpacity <$> Color.alpha color
-        fillAttr = SVG.At.fill (colorValue color)
+fillAttrs = paintAttrs SVG.At.fill At.fillOpacity
+
+strokeAttrs :: D.Paint -> [InlineAttribute]
+strokeAttrs = paintAttrs SVG.At.stroke At.strokeOpacity
 
 stopColorAttrs :: D.Color -> [SVG.Attribute]
 stopColorAttrs color = stopColorAttr : maybeToList stopOpacityAttr

@@ -11,7 +11,10 @@ module Text.Nouns.Compiler.Document
 , Document(..)
 , Element(..)
 , PathCommand(..)
-, black
+, circle
+, rectangle
+, path
+, defaultValue
 , showFuncIRI
 , localIRIForId
 , fileIRI
@@ -57,9 +60,6 @@ data Paint = ColorPaint Color
            | GradientPaint Gradient
            deriving (Show, Eq)
 
-black :: Paint
-black = ColorPaint Color.black
-
 data Document = Document [Element] deriving (Show, Eq)
 
 data Element = Rectangle { x :: Coordinate
@@ -68,11 +68,13 @@ data Element = Rectangle { x :: Coordinate
                          , height :: Length
                          , cornerRadius :: Length
                          , fill :: Paint
+                         , stroke :: Paint
                          }
              | Circle { cx :: Coordinate
                       , cy :: Coordinate
                       , r :: Length
                       , fill :: Paint
+                      , stroke :: Paint
                       }
              | Image { x :: Coordinate
                      , y :: Coordinate
@@ -83,6 +85,7 @@ data Element = Rectangle { x :: Coordinate
              | Group { members :: [Element]
                      }
              | Path { fill :: Paint
+                    , stroke :: Paint
                     , commands :: [PathCommand]
                     }
              deriving (Show, Eq)
@@ -90,3 +93,38 @@ data Element = Rectangle { x :: Coordinate
 data PathCommand = Move Coordinate Coordinate
                  | Line Coordinate Coordinate
                  deriving (Show, Eq)
+
+class Default a where
+  defaultValue :: a
+
+instance Default Color where
+  defaultValue = Color.black
+
+instance Default Paint where
+  defaultValue = ColorPaint defaultValue
+
+instance Default Double where
+  defaultValue = 0
+
+circle :: Element
+circle = Circle { cx = defaultValue
+                , cy = defaultValue
+                , r = defaultValue
+                , fill = defaultValue
+                , stroke = defaultValue
+                }
+
+path :: Element
+path = Path { fill = defaultValue
+            , stroke = defaultValue
+            , commands = []
+            }
+
+rectangle :: Element
+rectangle = Rectangle { x = defaultValue
+                      , y = defaultValue
+                      , width = defaultValue
+                      , height = defaultValue
+                      , cornerRadius = defaultValue
+                      , fill = defaultValue
+                      , stroke = defaultValue }

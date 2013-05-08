@@ -63,30 +63,29 @@ test_duplicate_args_in_function_def = assertError
   "let fn(x,y,x) = color.red"
 
 test_define_function_with_0_args = assertOutputElement
-  (D.Circle 0 0 15 $ colorPaint "ffff00")
+  D.circle { D.fill = colorPaint "ffff00"}
   [s|let color.yellow = #ffff00
-     shape.circle(0, 0, 15, fill:color.yellow)|]
+     shape.circle(0, 0, 0, fill:color.yellow)|]
 
 test_define_function_with_many_args = assertOutputElement
-  (D.Circle 0 0 20 $ colorPaint "abcdef")
+  D.circle { D.r = 20, D.fill = colorPaint "abcdef" }
   [s|let circle(r, c) = shape.circle(0, 0,r,c)
      circle(20, #abcdef)|]
 
 test_argument_shadows_function = assertOutputElement
-  (D.Circle 1 2 3 $ colorPaint "123456")
+  D.circle { D.fill = colorPaint "123456" }
   [s|let x = #abcdef
      let f(x) = x
-     shape.circle(1, 2, 3, f(#123456))|]
+     shape.circle(0, 0, 0, f(#123456))|]
 
 test_operators = assertOutputElement
-  (D.Rectangle (1+2) (3-4) (5*6) (7/8) 0 $ colorPaint "000000")
+  D.rectangle { D.x = 1+2, D.y = 3-4, D.width = 5*6, D.height = 7/8 }
   [s|shape.rectangle(1+2, 3-4, 5*6, 7/8)|]
 
 test_operators_associativity = assertOutputElement
-  (D.Rectangle (1-2-3) (4/5/6) (1-2+3) (4/5*6) 0 $ colorPaint "000000")
+  D.rectangle { D.x = 1-2-3, D.y = 4/5/6, D.width = 1-2+3, D.height = 4/5*6 }
   [s|shape.rectangle(1-2-3, 4/5/6, 1-2+3, 4/5*6)|]
 
 test_operators_precedence = assertOutputElement
-  (D.Rectangle (2+3*4) (2+3/4) (2-3*4) (2-3/4) ((2+3)*4) $ colorPaint "000000")
+  D.rectangle { D.x = 2+3*4, D.y = 2+3/4, D.width = 2-3*4, D.height = 2-3/4, D.cornerRadius = (2+3)*4 }
   [s|shape.rectangle(2+3*4, 2+3/4, 2-3*4, 2-3/4, (2+3)*4)|]
-
