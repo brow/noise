@@ -16,6 +16,7 @@ definitions = Map.fromList
   , (["color","red"],           color "ff0000")
   , (["color","green"],         color "00ff00")
   , (["color","blue"],          color "0000ff")
+  , (["color","black"],         color "000000")
   , (["gradient","vertical"],   linearGradient 90)
   , (["gradient","horizontal"], linearGradient 0)
   , (["gradient","radial"],     radialGradient)

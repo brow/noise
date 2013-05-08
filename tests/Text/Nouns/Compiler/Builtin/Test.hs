@@ -44,9 +44,14 @@ test_image = assertOutputElement
            height: 50,
            file: "cat.jpeg")|]
 
-test_color_red = assertOutputElement
-  D.circle { D.fill = colorPaint "ff0000" }
-  [s|shape.circle(0, 0, 0, color.red)|]
+test_color_constants = mapM assertOutputColor
+  [ ("color.red", "ff0000")
+  , ("color.green", "00ff00")
+  , ("color.blue", "0000ff")
+  , ("color.black", "000000") ]
+  where assertOutputColor (function, hex) = assertOutputElement
+          D.circle { D.fill = colorPaint hex }
+          ("shape.circle(0, 0, 0, " ++ function ++ ")")
 
 test_gradient_vertical = assertOutputElement
   D.circle { D.fill =
