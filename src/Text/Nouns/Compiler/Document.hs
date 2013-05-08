@@ -98,7 +98,7 @@ class Default a where
   defaultValue :: a
 
 instance Default Color where
-  defaultValue = Color.black
+  defaultValue = Color.ARGB 0 0 0 0
 
 instance Default Paint where
   defaultValue = ColorPaint defaultValue

@@ -4,7 +4,6 @@ module Text.Nouns.Compiler.Document.Color
 , fromHex
 , toRGBHex
 , alpha
-, black
 ) where
 
 import Data.Word
@@ -51,6 +50,3 @@ fromHex _ = Nothing
 alpha :: Color -> Maybe Double
 alpha (ARGB a _ _ _) = Just (fromIntegral a / 255.0)
 alpha _              = Nothing
-
-black :: Color
-black = RGB 0 0 0
