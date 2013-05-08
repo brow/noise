@@ -76,22 +76,32 @@ data Element = Rectangle { x :: Coordinate
                       , fill :: Paint
                       , stroke :: Paint
                       }
-             | Image { x :: Coordinate
-                     , y :: Coordinate
-                     , width :: Length
-                     , height :: Length
-                     , file :: IRI
-                     }
-             | Group { members :: [Element]
-                     }
-             | Path { fill :: Paint
-                    , stroke :: Paint
-                    , commands :: [PathCommand]
-                    }
+             | Image  { x :: Coordinate
+                      , y :: Coordinate
+                      , width :: Length
+                      , height :: Length
+                      , file :: IRI
+                      }
+             | Group  { members :: [Element]
+                      }
+             | Path   { fill :: Paint
+                      , stroke :: Paint
+                      , commands :: [PathCommand]
+                      }
              deriving (Show, Eq)
 
-data PathCommand = Move Coordinate Coordinate
-                 | Line Coordinate Coordinate
+data PathCommand = Move { dx :: Coordinate
+                        , dy :: Coordinate
+                        }
+                 | Line { dx :: Coordinate
+                        , dy :: Coordinate
+                        }
+                 | Arc  { dx :: Coordinate
+                        , dy :: Coordinate
+                        , rx :: Length
+                        , ry :: Length
+                        , xAxisRotation :: Angle
+                        }
                  deriving (Show, Eq)
 
 class Default a where

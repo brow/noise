@@ -23,6 +23,7 @@ definitions = Map.fromList
   , (["group"],                 group)
   , (["path","move"],           pathMove)
   , (["path","line"],           pathLine)
+  , (["path","arc"],            pathArc)
   ]
 
 rectangle :: Function F.Value
@@ -80,10 +81,19 @@ path = fmap F.ElementValue  $ D.Path
 
 pathMove :: Function F.Value
 pathMove = fmap F.PathCommandValue $ D.Move
-  <$> requireArg "x"
-  <*> requireArg "y"
+  <$> requireArg "dx"
+  <*> requireArg "dy"
 
 pathLine :: Function F.Value
 pathLine = fmap F.PathCommandValue $ D.Line
-  <$> requireArg "x"
-  <*> requireArg "y"
+  <$> requireArg "dx"
+  <*> requireArg "dy"
+
+pathArc :: Function F.Value
+pathArc = fmap F.PathCommandValue $ do
+  dx <- requireArg "dx"
+  dy <- requireArg "dy"
+  ry <- requireArg "ry"
+  let rotation = atan(dy / dx)
+      rx = sqrt(dx**2 + dy**2)
+  return $ D.Arc dx dy rx ry rotation

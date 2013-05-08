@@ -86,8 +86,10 @@ test_shape_path = assertOutputElement
     (colorPaint "abcdef")
     (colorPaint "123456")
     [ D.Move 1 2
-    , D.Line 3 4 ])
+    , D.Line 3 4
+    , D.Arc  5 0 5 6 0 ])
   [s|shape.path(fill:#abcdef, stroke:#123456) with
-       path.move(1,2)
-       path.line(3,4)
+       path.move(dx:1,dy:2)
+       path.line(dx:3,dy:4)
+       path.arc(dx:5,dy:0,ry:6)
      end|]

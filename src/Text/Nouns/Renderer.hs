@@ -150,5 +150,7 @@ stopColorAttrs color = stopColorAttr : maybeToList stopOpacityAttr
 
 renderPathCommand :: D.PathCommand -> String
 renderPathCommand command = unwords $ case command of
-  D.Move x y -> ["m", show x, show y]
-  D.Line x y -> ["l", show x, show y]
+  D.Move dx dy -> "m" : map show [dx, dy]
+  D.Line dx dy -> "l" : map show [dx, dy]
+  D.Arc x y rx ry rotation ->
+    ["a", show rx, show ry, show rotation, "0", "0", show x, show y]
