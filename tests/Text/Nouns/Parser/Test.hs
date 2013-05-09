@@ -63,6 +63,10 @@ test_argb_literal = assertOutputElement
   D.circle { D.fill = colorPaint "abcdef12" }
   "shape.circle(0,0,0,fill:#abcdef12)"
 
+test_negative_numbers = assertOutputElement
+  D.circle { D.cx = -1, D.cy = -2.34}
+  "shape.circle(-1,-2.34, 0)"
+
 test_ranges = assertAST
   (AST.SourceFile
     [AST.DefinitionStatement

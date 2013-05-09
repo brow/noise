@@ -41,8 +41,10 @@ block = ranged $ AST.Block
   <*> many statement
   <*> reserved "end"
 
-operator :: AST.Operator -> Parser AST.Operator
-operator op = Token.reservedOp str >> return op
+operator :: AST.OperatorFunction -> Parser AST.Operator
+operator op = ranged $ do
+  Token.reservedOp str
+  return (AST.Operator op)
   where str = case op of
           AST.Add -> "+"
           AST.Sub -> "-"
@@ -51,9 +53,11 @@ operator op = Token.reservedOp str >> return op
 
 expression :: Parser AST.Expression
 expression = Expr.buildExpressionParser opTable term
-  where opTable = [ [infixLeft AST.Mul, infixLeft AST.Div]
+  where opTable = [ [prefix AST.Sub]
+                  , [infixLeft AST.Mul, infixLeft AST.Div]
                   , [infixLeft AST.Add, infixLeft AST.Sub] ]
-        infixLeft op = Expr.Infix (AST.Operation <$> operator op) Expr.AssocLeft
+        infixLeft op = Expr.Infix (AST.InfixOperation <$> operator op) Expr.AssocLeft
+        prefix op = Expr.Prefix (AST.PrefixOperation <$> operator op)
         term = colorLiteral
            <|> floatLiteral
            <|> stringLiteral

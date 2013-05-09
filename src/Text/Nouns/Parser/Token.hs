@@ -50,15 +50,12 @@ lexeme p = p <* markPosition <* whiteSpace
 identifier :: Parser AST.Identifier
 identifier = lexeme Internal.identifier
 
-float :: Parser Double
-float = lexeme Internal.float
-
-integer :: Parser Integer
-integer = lexeme Internal.integer
-
 number :: Parser Double
-number = try float
-         <|> fmap fromInteger integer
+number = lexeme $ do
+  naturalOrFloat <- Internal.natFloat
+  return $ case naturalOrFloat of
+    Left integer -> fromInteger integer
+    Right double -> double
 
 colorLiteral :: Parser String
 colorLiteral = lexeme (char '#' >> colorStr)

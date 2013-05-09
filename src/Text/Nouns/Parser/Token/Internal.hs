@@ -3,15 +3,14 @@
 
 module Text.Nouns.Parser.Token.Internal
 ( identifier
-, float
-, integer
+, natFloat
 , stringLiteral
 , reserved
 , reservedOp
 ) where
 
-import Data.Char ( isAlpha, toLower, toUpper, isSpace, digitToInt )
-import Data.List ( nub, sort )
+import Data.Char (isAlpha, toLower, toUpper, digitToInt)
+import Data.List (sort)
 import Text.Parsec.Prim
 import Text.Parsec.Char
 import Text.Parsec.Combinator
@@ -20,10 +19,6 @@ import Text.Parsec.Token
   , reservedNames
   , identStart
   , identLetter
-  , commentStart
-  , commentLine
-  , nestedComments
-  , commentEnd
   , opLetter
   )
 import qualified Text.Nouns.Parser.Language
@@ -32,9 +27,6 @@ import qualified Text.Nouns.Parser.Language
 
 languageDef = Text.Nouns.Parser.Language.def
 
-float           = floating   <?> "float"
-integer         = int        <?> "integer"
-
 identifier =
     try $
     do{ name <- ident
@@ -42,7 +34,6 @@ identifier =
          then unexpected ("reserved word " ++ show name)
          else return name
       }
-
 
 ident
     = do{ c <- identStart languageDef
@@ -56,7 +47,6 @@ isReservedName name
     where
       caseName      | caseSensitive languageDef  = name
                     | otherwise               = map toLower name
-
 
 isReserved names name
     = scan names
@@ -73,35 +63,25 @@ theReservedNames
     where
       reserved = reservedNames languageDef
 
-int             = do{ f <- sign
-                    ; whiteSpace
-                    ; n <- nat
-                    ; return (f n)
+natFloat        = do{ char '0'
+                    ; zeroNumFloat
+                    }
+                  <|> decimalFloat
+
+zeroNumFloat    =  do{ n <- hexadecimal <|> octal
+                     ; return (Left n)
+                     }
+                <|> decimalFloat
+                <|> fractFloat 0
+                <|> return (Left 0)
+
+decimalFloat    = do{ n <- decimal
+                    ; option (Left n)
+                             (fractFloat n)
                     }
 
-sign            =   (char '-' >> return negate)
-                <|> (char '+' >> return id)
-                <|> return id
-
-nat             = zeroNumber <|> decimal
-
-zeroNumber      = do{ char '0'
-                    ; hexadecimal <|> octal <|> decimal <|> return 0
-                    }
-                  <?> ""
-
-decimal         = number 10 digit
-hexadecimal     = do{ oneOf "xX"; number 16 hexDigit }
-octal           = do{ oneOf "oO"; number 8 octDigit  }
-
-number base baseDigit
-    = do{ digits <- many1 baseDigit
-        ; let n = foldl (\x d -> base*x + toInteger (digitToInt d)) 0 digits
-        ; seq n (return n)
-        }
-
-floating        = do{ n <- decimal
-                    ; fractExponent n
+fractFloat n    = do{ f <- fractExponent n
+                    ; return (Right f)
                     }
 
 fractExponent n = do{ fract <- fraction
@@ -131,6 +111,20 @@ exponent'       = do{ oneOf "eE"
                    power e  | e < 0      = 1.0/power(-e)
                             | otherwise  = fromInteger (10^e)
 
+sign            =   (char '-' >> return negate)
+                <|> (char '+' >> return id)
+                <|> return id
+
+decimal         = number 10 digit
+hexadecimal     = do{ oneOf "xX"; number 16 hexDigit }
+octal           = do{ oneOf "oO"; number 8 octDigit  }
+
+number base baseDigit
+    = do{ digits <- many1 baseDigit
+        ; let n = foldl (\x d -> base*x + toInteger (digitToInt d)) 0 digits
+        ; seq n (return n)
+        }
+
 stringLiteral   = do{ str <- between (char '"')
                                      (char '"' <?> "end of string")
                                      (many stringChar)
@@ -151,11 +145,10 @@ stringEscape    = do{ char '\\'
                     }
 
 escapeEmpty     = char '&'
+
 escapeGap       = do{ many1 space
                     ; char '\\' <?> "end of string gap"
                     }
-
-
 
 escapeCode      = charEsc <|> charNum <|> charAscii <|> charControl
                 <?> "escape code"
@@ -212,50 +205,6 @@ caseString name
                   | otherwise  = char c
 
       msg         = show name
-
-whiteSpace
-    | noLine && noMulti  = skipMany (simpleSpace <?> "")
-    | noLine             = skipMany (simpleSpace <|> multiLineComment <?> "")
-    | noMulti            = skipMany (simpleSpace <|> oneLineComment <?> "")
-    | otherwise          = skipMany (simpleSpace <|> oneLineComment <|> multiLineComment <?> "")
-    where
-      noLine  = null (commentLine languageDef)
-      noMulti = null (commentStart languageDef)
-
-simpleSpace =
-    skipMany1 (satisfy isSpace)
-
-oneLineComment =
-    do{ try (string (commentLine languageDef))
-      ; skipMany (satisfy (/= '\n'))
-      ; return ()
-      }
-
-multiLineComment =
-    do { try (string (commentStart languageDef))
-       ; inComment
-       }
-
-inComment
-    | nestedComments languageDef  = inCommentMulti
-    | otherwise                = inCommentSingle
-
-inCommentMulti
-    =   do{ try (string (commentEnd languageDef)) ; return () }
-    <|> do{ multiLineComment                     ; inCommentMulti }
-    <|> do{ skipMany1 (noneOf startEnd)          ; inCommentMulti }
-    <|> do{ oneOf startEnd                       ; inCommentMulti }
-    <?> "end of comment"
-    where
-      startEnd   = nub (commentEnd languageDef ++ commentStart languageDef)
-
-inCommentSingle
-    =   do{ try (string (commentEnd languageDef)); return () }
-    <|> do{ skipMany1 (noneOf startEnd)         ; inCommentSingle }
-    <|> do{ oneOf startEnd                      ; inCommentSingle }
-    <?> "end of comment"
-    where
-      startEnd   = nub (commentEnd languageDef ++ commentStart languageDef)
 
 reservedOp name =
     try $
