@@ -4,6 +4,7 @@ module Text.Nouns.Compiler.Builtin
 
 import Control.Applicative
 import qualified Data.Map as Map
+import qualified Text.Nouns.Compiler.Document.Color as Color
 import qualified Text.Nouns.Compiler.Document as D
 import qualified Text.Nouns.Compiler.Function as F
 import Text.Nouns.Compiler.Function (Function, requireArg, acceptArg, acceptBlockArgs)
@@ -13,10 +14,11 @@ definitions = Map.fromList
   [ (["shape","rectangle"],     rectangle)
   , (["shape","circle"],        circle)
   , (["shape","path"],          path)
-  , (["color","red"],           color "ff0000")
-  , (["color","green"],         color "00ff00")
-  , (["color","blue"],          color "0000ff")
-  , (["color","black"],         color "000000")
+  , (["color","red"],           color (Color.RGB 255 0 0))
+  , (["color","green"],         color (Color.RGB 0 255 0))
+  , (["color","blue"],          color (Color.RGB 0 0 255))
+  , (["color","black"],         color (Color.RGB 0 0 0))
+  , (["color","adjust"],        colorAdjust)
   , (["gradient","vertical"],   linearGradient 90)
   , (["gradient","horizontal"], linearGradient 0)
   , (["gradient","radial"],     radialGradient)
@@ -45,8 +47,19 @@ circle = fmap F.ElementValue $ D.Circle
   <*> acceptArg "fill" D.defaultValue
   <*> acceptArg "stroke" D.defaultValue
 
-color :: String -> Function F.Value
+
+color :: D.Color -> Function F.Value
 color = return . F.ColorValue
+
+colorAdjust :: Function F.Value
+colorAdjust = fmap F.ColorValue $ do
+  c <- requireArg "color"
+  l <- acceptArg "lightness" (1.0 :: Double)
+  let lighten = toWord . (l *) . fromIntegral
+      toWord = round . max 0 . min 255
+  return $ case c of
+    Color.RGB r g b -> Color.RGB (lighten r) (lighten g) (lighten b)
+    Color.ARGB a r g b -> Color.ARGB a (lighten r) (lighten g) (lighten b)
 
 requireGradientColorArgs :: Function [(D.Number,D.Color)]
 requireGradientColorArgs = do

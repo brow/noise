@@ -12,6 +12,7 @@ import qualified Data.Map as Map
 import qualified Data.List as List
 import qualified Text.Nouns.Parser.AST as AST
 import qualified Text.Nouns.Compiler.Document as D
+import qualified Text.Nouns.Compiler.Document.Color as Color
 import qualified Text.Nouns.Compiler.Function as F
 import qualified Text.Nouns.Compiler.Builtin as Builtin
 import Text.Nouns.Compiler.Error (CompileError(..), FunctionError(..))
@@ -72,8 +73,9 @@ duplicatesBy cmp (x:xs) =
 
 evaluate :: Definitions -> AST.Expression -> Compiled F.Value
 evaluate _ (AST.FloatLiteral x _)  = return (F.NumberValue x)
-evaluate _ (AST.ColorLiteral x _)  = return (F.ColorValue x)
 evaluate _ (AST.StringLiteral x _) = return (F.StringValue x)
+evaluate _ (AST.ColorLiteral x _)  = case Color.fromHex x of
+  Just c  -> return (F.ColorValue c)
 evaluate defs (AST.FunctionCall identifier args block _) = do
   function <- lookUpFunction defs identifier
   (posArgs, kwArgs) <- evaluateArguments defs args

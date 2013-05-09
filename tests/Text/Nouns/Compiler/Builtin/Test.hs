@@ -53,6 +53,10 @@ test_color_constants = mapM assertOutputColor
           D.circle { D.fill = colorPaint hex }
           ("shape.circle(0, 0, 0, " ++ function ++ ")")
 
+test_color_adjust = assertOutputElement
+  D.circle { D.fill = colorPaint "804020" }
+  [s|shape.circle(0,0,0,color.adjust(#ff8040,lightness:0.5))|]
+
 test_gradient_vertical = assertOutputElement
   D.circle { D.fill =
     D.GradientPaint $

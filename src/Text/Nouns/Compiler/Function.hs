@@ -16,12 +16,11 @@ import Control.Applicative
 import Control.Monad
 import Text.Nouns.Compiler.Error (FunctionError(..))
 import qualified Text.Nouns.Compiler.Document as D
-import qualified Text.Nouns.Compiler.Document.Color as Color
 
 type Keyword = String
 
 data Value = NumberValue D.Number
-           | ColorValue String
+           | ColorValue D.Color
            | StringValue String
            | ElementValue D.Element
            | GradientValue D.Gradient
@@ -67,12 +66,12 @@ instance FromValue D.Number where
   fromValue _ = Nothing
 
 instance FromValue D.Paint where
-  fromValue (ColorValue x) = D.ColorPaint <$> Color.fromHex x
+  fromValue (ColorValue x) = Just (D.ColorPaint x)
   fromValue (GradientValue x) = Just (D.GradientPaint x)
   fromValue _ = Nothing
 
 instance FromValue D.Color where
-  fromValue (ColorValue x) = Color.fromHex x
+  fromValue (ColorValue x) = Just x
   fromValue _ = Nothing
 
 instance FromValue D.IRI where
