@@ -26,7 +26,7 @@ runWithOptions [] files [] = do
     Right ast -> case Compiler.compile ast of
       Left err -> printErr err
       Right doc -> putStr (Renderer.render doc)
-  where printErr err = IO.hPutStr IO.stderr (showError err)
+  where printErr err = IO.hPutStrLn IO.stderr (showError err)
 runWithOptions _ _ _ = putStr helpText
 
 showError :: (Error.Error a) => a -> String
