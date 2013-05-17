@@ -1,7 +1,7 @@
-name:                nouns
+name:                noise
 version:             0.0.1
-synopsis:            A compact language for vector graphics
-description:         A compact language for vector graphics
+synopsis:            A friendly language for graphic design
+description:         A friendly language for graphic design
 license:             MIT
 license-file:        LICENSE
 author:              Tom Brow
@@ -42,13 +42,13 @@ library
     Text.Nouns.Parser.Token
     Text.Nouns.Renderer.SVG.Attributes
 
-executable nouns
+executable noise
   ghc-options: -Wall
   hs-source-dirs: src-cli
   main-is: Main.hs
   build-depends:
     base ==4.5.*,
-    nouns
+    noise
 
 test-suite test
   ghc-options: -Wall
@@ -62,4 +62,4 @@ test-suite test
     base ==4.5.*,
     parsec ==3.1.*,
     string-qq ==0.0.*,
-    nouns
+    noise

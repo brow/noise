@@ -48,4 +48,4 @@ getOptions :: IO ([Flag], [String], [String])
 getOptions = Opt.getOpt Opt.Permute optionsSpec <$> Env.getArgs
 
 helpText :: String
-helpText = Opt.usageInfo "Usage: nouns [file]" optionsSpec
+helpText = Opt.usageInfo "Usage: noise [file]" optionsSpec
