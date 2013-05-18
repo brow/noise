@@ -17,3 +17,18 @@ Let's make sure it worked:
     $ noise --help
     Usage: noise [file]
       -h  --help  Print this help text.
+
+## Usage
+
+`noise` reads Noise code from standard input and writes SVG to standard output:
+
+    echo "shape.circle(10,10,10,fill:color.red)" | noise > circle.svg
+
+It can also read from a file:
+    
+    echo "shape.rectangle(0,0,10,10,fill:color.blue)" > rectangle.noise
+    noise rectangle.noise > rectangle.svg
+
+Use `convert` from the [ImageMagick](http://www.imagemagick.org/) package to write other image formats:
+
+    echo "shape.circle(10,10,10,fill:color.green)" | noise | convert -size 20x20 svg:- circle.png
