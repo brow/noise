@@ -4,11 +4,11 @@ import           Control.Applicative
 import qualified System.Environment as Env
 import qualified System.Console.GetOpt as Opt
 import qualified System.IO as IO
-import qualified Text.Nouns.Error as Error
-import qualified Text.Nouns.Parser as Parser
-import qualified Text.Nouns.Compiler as Compiler
-import qualified Text.Nouns.Renderer as Renderer
-import qualified Text.Nouns.SourceRange as SourceRange
+import qualified Text.Noise.Error as Error
+import qualified Text.Noise.Parser as Parser
+import qualified Text.Noise.Compiler as Compiler
+import qualified Text.Noise.Renderer as Renderer
+import qualified Text.Noise.SourceRange as SourceRange
 
 main :: IO ()
 main = do

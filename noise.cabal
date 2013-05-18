@@ -24,23 +24,23 @@ library
     network ==2.3.*,
     parsec ==3.1.*
   exposed-modules:
-    Text.Nouns.Compiler
-    Text.Nouns.Compiler.Document
-    Text.Nouns.Compiler.Document.Color
-    Text.Nouns.Error
-    Text.Nouns.Parser
-    Text.Nouns.Parser.AST
-    Text.Nouns.Parser.Character
-    Text.Nouns.Renderer
-    Text.Nouns.SourceRange
+    Text.Noise.Compiler
+    Text.Noise.Compiler.Document
+    Text.Noise.Compiler.Document.Color
+    Text.Noise.Error
+    Text.Noise.Parser
+    Text.Noise.Parser.AST
+    Text.Noise.Parser.Character
+    Text.Noise.Renderer
+    Text.Noise.SourceRange
   other-modules:
-    Text.Nouns.Compiler.Builtin
-    Text.Nouns.Compiler.Error
-    Text.Nouns.Compiler.Function
-    Text.Nouns.Parser.Token.Internal
-    Text.Nouns.Parser.Language
-    Text.Nouns.Parser.Token
-    Text.Nouns.Renderer.SVG.Attributes
+    Text.Noise.Compiler.Builtin
+    Text.Noise.Compiler.Error
+    Text.Noise.Compiler.Function
+    Text.Noise.Parser.Token.Internal
+    Text.Noise.Parser.Language
+    Text.Noise.Parser.Token
+    Text.Noise.Renderer.SVG.Attributes
 
 executable noise
   ghc-options: -Wall
