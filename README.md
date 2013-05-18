@@ -25,10 +25,29 @@ Let's make sure it worked:
     echo "shape.circle(10,10,10,fill:color.red)" | noise > circle.svg
 
 It can also read from a file:
-    
+
     echo "shape.rectangle(0,0,10,10,fill:color.blue)" > rectangle.noise
     noise rectangle.noise > rectangle.svg
 
 Use `convert` from the [ImageMagick](http://www.imagemagick.org/) package to write other image formats:
 
     echo "shape.circle(10,10,10,fill:color.green)" | noise | convert -size 20x20 svg:- circle.png
+
+## Development
+
+I recommend using `cabal-dev` to maintain a sandboxed build environment. If you don't have it already:
+
+    cabal install cabal-dev
+
+Then, in the project root:
+
+    cabal-dev install-deps --enable-tests
+    cabal-dev configure --enable-tests
+
+After performing the above setup once, you can build and test `noise` like so:
+
+    cabal-dev build && cabal-dev test
+
+For a more detailed and colorful test report, try this:
+
+    cabal-dev build && ./dist/build/test/test
