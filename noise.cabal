@@ -13,6 +13,9 @@ cabal-version:       >=1.8
 homepage:            http://github.com/brow/noise
 bug-reports:         http://github.com/brow/noise/issues
 
+extra-source-files:
+  README.md
+
 source-repository head
   type: git
   location: git://github.com/brow/noise.git
