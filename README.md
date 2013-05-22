@@ -8,9 +8,7 @@ This project is an implementation of Noise written in [Haskell](http://haskell.o
 
 First, install the [Haskell Platform](http://www.haskell.org/platform/). Then:
 
-    git clone git@github.com:brow/noise.git
-    cd noise
-    cabal install
+    cabal install noise
 
 Let's make sure it worked:
 
@@ -39,8 +37,10 @@ I recommend using `cabal-dev` to maintain a sandboxed build environment. If you 
 
     cabal install cabal-dev
 
-Then, in the project root:
+Then do this:
 
+    git clone git@github.com:brow/noise.git
+    cd noise
     cabal-dev install-deps --enable-tests
     cabal-dev configure --enable-tests
 
