@@ -10,7 +10,7 @@ First, install the [Haskell Platform](http://www.haskell.org/platform/). Then:
 
     cabal install noise
 
-Let's make sure it worked:
+To test the installation, invoke `noise`:
 
     $ noise --help
     Usage: noise [file]
