@@ -41,7 +41,7 @@ Then do this:
 
     git clone git@github.com:brow/noise.git
     cd noise
-    cabal-dev install-deps --enable-tests
+    cabal-dev install --only-dependencies --enable-tests
     cabal-dev configure --enable-tests
 
 After performing the above setup once, you can build and test `noise` like so:
